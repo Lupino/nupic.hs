@@ -47,7 +47,6 @@ class MNIST {
 
   private:
     SpatialPooler sp;
-    SDRClassifier clsr;
     mnist::MNIST_dataset<std::vector, std::vector<uint8_t>, uint8_t> dataset;
 
   public:
@@ -78,16 +77,10 @@ void setup(string path, SDR *input, SDR *columns) {
 
   columns -> initialize({sp.getNumColumns()});
 
-  clsr.initialize(
-    /* steps */         {0},
-    /* alpha */         .001,
-    /* actValueAlpha */ .3,
-                        verbosity);
-
   dataset = mnist::read_dataset<std::vector, std::vector, uint8_t, uint8_t>(path); //from CMake
 }
 
-void train(SDR *input, SDR *columns) {
+void train(SDR *input, SDR *columns, SDRClassifier &clsr) {
   // Train
 
   if(verbosity)
@@ -130,7 +123,7 @@ void train(SDR *input, SDR *columns) {
   cout << columnStats << endl;
 }
 
-void test(SDR *input, SDR *columns) {
+void test(SDR *input, SDR *columns, SDRClassifier &clsr) {
   // Test
   Real score = 0;
   UInt n_samples = 0;
@@ -169,10 +162,11 @@ void test(SDR *input, SDR *columns) {
 int main1(int argc, char **argv) {
   nupic::SDR *input;
   nupic::SDR *columns;
+  nupic::algorithms::sdr_classifier::SDRClassifier clsr;
   nupic::MNIST * m = new nupic::MNIST();
   m->setup(std::string("xxx"), input, columns);
-  m->train(input, columns);
-  m->test(input, columns);
+  m->train(input, columns, clsr);
+  m->test(input, columns, clsr);
 
   return 0;
 }

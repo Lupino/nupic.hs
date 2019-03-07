@@ -47,7 +47,6 @@ class MNIST {
 
   private:
     SpatialPooler sp;
-    SDRClassifier clsr;
     mnist::MNIST_dataset<std::vector, std::vector<uint8_t>, uint8_t> dataset;
 
   public:
@@ -55,8 +54,8 @@ class MNIST {
     const UInt train_dataset_iterations = 1u;
 
     void setup(string path, SDR *input, SDR *columns);
-    void train(SDR *input, SDR *columns);
-    void test(SDR *input, SDR *columns);
+    void train(SDR *input, SDR *columns, SDRClassifier &clsr);
+    void test(SDR *input, SDR *columns, SDRClassifier &clsr);
 
 };  // End class MNIST
 }   // End namespace examples
