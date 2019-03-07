@@ -47,8 +47,6 @@ class MNIST {
 
   private:
     SpatialPooler sp;
-    SDR input;
-    SDR columns;
     SDRClassifier clsr;
     mnist::MNIST_dataset<std::vector, std::vector<uint8_t>, uint8_t> dataset;
 
@@ -57,11 +55,10 @@ class MNIST {
     const UInt train_dataset_iterations = 1u;
 
 
-void setup(string path) {
+void setup(string path, SDR *input, SDR *columns) {
 
-  input.initialize({28, 28});
   sp.initialize(
-    /* inputDimensions */             input.dimensions,
+    /* inputDimensions */             input -> dimensions,
     /* columnDimensions */            {28, 28}, //mostly affects speed, to some threshold accuracy only marginally
     /* potentialRadius */             5u,
     /* potentialPct */                0.5f,
@@ -79,7 +76,7 @@ void setup(string path) {
     /* spVerbosity */                 1u,
     /* wrapAround */                  false); //wrap is false for this problem
 
-  columns.initialize({sp.getNumColumns()});
+  columns -> initialize({sp.getNumColumns()});
 
   clsr.initialize(
     /* steps */         {0},
@@ -90,7 +87,7 @@ void setup(string path) {
   dataset = mnist::read_dataset<std::vector, std::vector, uint8_t, uint8_t>(path); //from CMake
 }
 
-void train() {
+void train(SDR *input, SDR *columns) {
   // Train
 
   if(verbosity)
@@ -98,8 +95,8 @@ void train() {
          << " cycles ..." << endl;
   size_t i = 0;
 
-  SDR_Metrics inputStats(input,    1402);
-  SDR_Metrics columnStats(columns, 1402);
+  SDR_Metrics inputStats(*input,    1402);
+  SDR_Metrics columnStats(*columns, 1402);
 
   for(auto epoch = 0u; epoch < train_dataset_iterations; epoch++) {
     NTA_INFO << "epoch " << epoch;
@@ -114,10 +111,10 @@ void train() {
       const UInt label  = dataset.training_labels.at(idx);
 
       // Compute & Train
-      input.setDense( image );
-      sp.compute(input, true, columns);
+      input -> setDense( image );
+      sp.compute(*input, true, *columns);
       ClassifierResult result;
-      clsr.compute(sp.getIterationNum(), columns.getSparse(),
+      clsr.compute(sp.getIterationNum(), columns -> getSparse(),
         /* bucketIdxList */   {label},
         /* actValueList */    {(Real)label},
         /* category */        true,
@@ -133,7 +130,7 @@ void train() {
   cout << columnStats << endl;
 }
 
-void test() {
+void test(SDR *input, SDR *columns) {
   // Test
   Real score = 0;
   UInt n_samples = 0;
@@ -145,10 +142,10 @@ void test() {
     const UInt label  = dataset.test_labels.at(i);
 
     // Compute
-    input.setDense( image );
-    sp.compute(input, false, columns);
+    input->setDense( image );
+    sp.compute(*input, false, *columns);
     ClassifierResult result;
-    clsr.compute(sp.getIterationNum(), columns.getSparse(),
+    clsr.compute(sp.getIterationNum(), columns -> getSparse(),
       /* bucketIdxList */   {},
       /* actValueList */    {},
       /* category */        true,
@@ -170,10 +167,12 @@ void test() {
 
 
 int main1(int argc, char **argv) {
+  nupic::SDR *input;
+  nupic::SDR *columns;
   nupic::MNIST * m = new nupic::MNIST();
-  m->setup(std::string("xxx"));
-  m->train();
-  m->test();
+  m->setup(std::string("xxx"), input, columns);
+  m->train(input, columns);
+  m->test(input, columns);
 
   return 0;
 }

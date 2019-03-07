@@ -40,6 +40,8 @@ executable nupic
   build-depends:
       base
     , nupic
+    , hoppy-runtime
+    , vector
   default-language: Haskell2010
   ghc-options: -W -fwarn-incomplete-patterns -fwarn-unused-do-bind -dynamic
 
