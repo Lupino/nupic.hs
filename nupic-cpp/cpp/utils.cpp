@@ -2,7 +2,6 @@
 #include <vector>
 #include <mnist/mnist_reader.hpp> // MNIST data itself + read methods, namespace mnist::
 
-
 std::vector<nupic::UInt> getSDRDimensions(nupic::SDR self) {
     return self.dimensions;
 }
@@ -23,13 +22,6 @@ unsigned int getTrainLabel(unsigned int idx) {
   return label;
 }
 
-std::vector<unsigned int> getTrainIdxs() {
-  vector<unsigned int> index( g_dataset.training_labels.size() );
-  index.assign(g_dataset.training_labels.cbegin(), g_dataset.training_labels.cend());
-  nupic::Random().shuffle( index.begin(), index.end() );
-  return index;
-}
-
 std::vector<unsigned char> getTestImage(unsigned int idx) {
   const auto image = g_dataset.test_images.at(idx);
   return image;
@@ -38,10 +30,4 @@ std::vector<unsigned char> getTestImage(unsigned int idx) {
 unsigned int getTestLabel(unsigned int idx) {
   const unsigned int label  = g_dataset.test_labels.at(idx);
   return label;
-}
-
-std::vector<unsigned int> getTestIdxs() {
-  vector<unsigned int> index( g_dataset.test_labels.size() );
-  index.assign(g_dataset.test_labels.cbegin(), g_dataset.test_labels.cend());
-  return index;
 }

@@ -38,10 +38,8 @@ mod_nupic =
       , ExportFn c_setup
       , ExportFn c_getTrainImage
       , ExportFn c_getTrainLabel
-      , ExportFn c_getTrainIdxs
       , ExportFn c_getTestImage
       , ExportFn c_getTestLabel
-      , ExportFn c_getTestIdxs
       ]
 
 c_setup :: Function
@@ -59,11 +57,6 @@ c_getTrainLabel =
   addReqIncludes [includeLocal "utils.hpp"] $
   makeFn (ident "getTrainLabel") Nothing Nonpure [uintT] uintT
 
-c_getTrainIdxs :: Function
-c_getTrainIdxs =
-  addReqIncludes [includeLocal "utils.hpp"] $
-  makeFn (ident "getTrainIdxs") Nothing Nonpure [] uintVectorT'
-
 c_getTestImage :: Function
 c_getTestImage =
   addReqIncludes [includeLocal "utils.hpp"] $
@@ -73,11 +66,6 @@ c_getTestLabel :: Function
 c_getTestLabel =
   addReqIncludes [includeLocal "utils.hpp"] $
   makeFn (ident "getTestLabel") Nothing Nonpure [uintT] uintT
-
-c_getTestIdxs :: Function
-c_getTestIdxs =
-  addReqIncludes [includeLocal "utils.hpp"] $
-  makeFn (ident "getTestIdxs") Nothing Nonpure [] uintVectorT'
 
 c_uintVector :: Contents
 c_uintVector = instantiate' "UIntVector" uintT mempty $ defaultOptions {optValueConversion = Just ConvertValue}
