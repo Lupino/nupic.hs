@@ -7,7 +7,7 @@ CFLAGS = -O2
 
 all: cpp/libnupic.so
 
-cpp/libnupic.so: cpp/gen_nupic.o cpp/nupic.o cpp/gen_std.o cpp/utils.o
+cpp/libnupic.so: cpp/gen_nupic.o cpp/gen_std.o cpp/utils.o
 ifeq ($(OS),darwin)
 	$(CC) $(CFLAGS) -dynamic -shared -fPIC -install_name @rpath/libnupic.so -lnupic_core -Lcpp -o $@ $^
 else

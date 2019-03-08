@@ -41,7 +41,8 @@ executable nupic
       base
     , nupic
     , hoppy-runtime
-    , vector
+    , random-shuffle
+    , random
   default-language: Haskell2010
   ghc-options: -W -fwarn-incomplete-patterns -fwarn-unused-do-bind -dynamic
 

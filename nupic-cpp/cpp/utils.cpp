@@ -1,5 +1,47 @@
 #include "utils.hpp"
+#include <vector>
+#include <mnist/mnist_reader.hpp> // MNIST data itself + read methods, namespace mnist::
+
 
 std::vector<nupic::UInt> getSDRDimensions(nupic::SDR self) {
     return self.dimensions;
+}
+
+mnist::MNIST_dataset<std::vector, std::vector<uint8_t>, uint8_t> g_dataset;
+
+void setup() {
+  g_dataset = mnist::read_dataset<std::vector, std::vector, uint8_t, uint8_t>(string("mnist-src/")); //from CMake
+}
+
+std::vector<unsigned char> getTrainImage(unsigned int idx) {
+  const auto image = g_dataset.training_images.at(idx);
+  return image;
+}
+
+unsigned int getTrainLabel(unsigned int idx) {
+  const unsigned int label  = g_dataset.training_labels.at(idx);
+  return label;
+}
+
+std::vector<unsigned int> getTrainIdxs() {
+  vector<unsigned int> index( g_dataset.training_labels.size() );
+  index.assign(g_dataset.training_labels.cbegin(), g_dataset.training_labels.cend());
+  nupic::Random().shuffle( index.begin(), index.end() );
+  return index;
+}
+
+std::vector<unsigned char> getTestImage(unsigned int idx) {
+  const auto image = g_dataset.test_images.at(idx);
+  return image;
+}
+
+unsigned int getTestLabel(unsigned int idx) {
+  const unsigned int label  = g_dataset.test_labels.at(idx);
+  return label;
+}
+
+std::vector<unsigned int> getTestIdxs() {
+  vector<unsigned int> index( g_dataset.test_labels.size() );
+  index.assign(g_dataset.test_labels.cbegin(), g_dataset.test_labels.cend());
+  return index;
 }

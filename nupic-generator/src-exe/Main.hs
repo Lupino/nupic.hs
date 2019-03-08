@@ -27,23 +27,57 @@ mod_nupic =
   moduleModify' (makeModule "internal" "gen_nupic.hpp" "gen_nupic.cpp") $ do
     moduleAddExports (toExports c_uintVector)
     moduleAddExports (toExports c_charVector)
+    moduleAddExports (toExports c_ucharVector)
+    moduleAddExports (toExports c_real64Vector)
     moduleAddExports
-      [ ExportClass c_mnist
-      , ExportClass c_sdr
+      [ ExportClass c_sdr
       , ExportClass c_sdrClassifier
       , ExportClass c_classifierResult
+      , ExportClass c_spatialPooler
       , ExportFn c_getSDRDimensions
+      , ExportFn c_setup
+      , ExportFn c_getTrainImage
+      , ExportFn c_getTrainLabel
+      , ExportFn c_getTrainIdxs
+      , ExportFn c_getTestImage
+      , ExportFn c_getTestLabel
+      , ExportFn c_getTestIdxs
       ]
 
-c_mnist :: Class
-c_mnist =
-  addReqIncludes [includeLocal "nupic.hpp"] $
-  makeClass (ident1 "nupic" "MNIST") (Just $ toExtName "Mnist") []
-  [ mkCtor "new" []
-  , mkMethod "setup" [objT c_string, ptrT $ objT c_sdr, ptrT $ objT c_sdr] voidT
-  , mkMethod "train" [ptrT $ objT c_sdr, ptrT $ objT c_sdr, refT $ objT c_sdrClassifier] voidT
-  , mkMethod "test"  [ptrT $ objT c_sdr, ptrT $ objT c_sdr, refT $ objT c_sdrClassifier] voidT
-  ]
+c_setup :: Function
+c_setup =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "setup") Nothing Nonpure [] voidT
+
+c_getTrainImage :: Function
+c_getTrainImage =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "getTrainImage") Nothing Nonpure [uintT] ucharVectorT'
+
+c_getTrainLabel :: Function
+c_getTrainLabel =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "getTrainLabel") Nothing Nonpure [uintT] uintT
+
+c_getTrainIdxs :: Function
+c_getTrainIdxs =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "getTrainIdxs") Nothing Nonpure [] uintVectorT'
+
+c_getTestImage :: Function
+c_getTestImage =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "getTestImage") Nothing Nonpure [uintT] ucharVectorT'
+
+c_getTestLabel :: Function
+c_getTestLabel =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "getTestLabel") Nothing Nonpure [uintT] uintT
+
+c_getTestIdxs :: Function
+c_getTestIdxs =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "getTestIdxs") Nothing Nonpure [] uintVectorT'
 
 c_uintVector :: Contents
 c_uintVector = instantiate' "UIntVector" uintT mempty $ defaultOptions {optValueConversion = Just ConvertValue}
@@ -59,8 +93,15 @@ charVectorT      = objT $ c_vector c_charVector
 constCharVectorT = constT charVectorT
 charVectorT'     = objToHeapT $ c_vector c_charVector
 
+c_ucharVector :: Contents
+c_ucharVector = instantiate' "UByteVector" ucharT mempty $ defaultOptions {optValueConversion = Just ConvertValue}
+
+ucharVectorT      = objT $ c_vector c_ucharVector
+constUCharVectorT = constT ucharVectorT
+ucharVectorT'     = objToHeapT $ c_vector c_ucharVector
+
 c_real64Vector :: Contents
-c_real64Vector = instantiate' "ByteVector" doubleT mempty $ defaultOptions {optValueConversion = Just ConvertValue}
+c_real64Vector = instantiate' "Real64Vector" doubleT mempty $ defaultOptions {optValueConversion = Just ConvertValue}
 
 constReal64VectorT = constT $ objT $ c_vector c_real64Vector
 
@@ -72,6 +113,7 @@ c_sdr =
   , mkMethod "initialize" [constUintVectorT] voidT
   , mkMethod "getDense" [] charVectorT'
   , mkMethod "setDense" [charVectorT] voidT
+  , mkMethod' "setDense" "setDenseWithUChar" [ucharVectorT] voidT
   , mkMethod "getSparse" [] uintVectorT'
   , mkMethod "setSparse" [uintVectorT] voidT
   ]
@@ -88,16 +130,7 @@ c_sdrClassifier =
   makeClass (ident3 "nupic" "algorithms" "sdr_classifier" "SDRClassifier") (Just $ toExtName "SdrClassifier") [] $
   [ mkCtor "new" []
   , mkMethod "initialize" [refT constUintVectorT, doubleT, doubleT, uintT] voidT
-  -- virtual void compute(UInt recordNum, const vector<UInt> &patternNZ,
-  --                      const vector<UInt> &bucketIdxList,
-  --                      const vector<Real64> &actValueList, bool category,
-  --                      bool learn, bool infer, ClassifierResult &result);
-  --                    recordNum patternNZ      bucketIdxList     actValueList        category learn infer
   , mkMethod "compute" [uintT, refT constUintVectorT, refT constUintVectorT, refT constReal64VectorT, boolT, boolT, boolT, refT $ objT $ c_classifierResult] voidT
-  -- , mkMethod "getDense" [] $ objToHeapT $ c_vector c_charVector
-  -- , mkMethod "setDense" [objT $ c_vector c_charVector] voidT
-  -- , mkMethod "getSparse" [] $ objToHeapT $ c_vector c_uintVector
-  -- , mkMethod "setSparse" [objT $ c_vector c_uintVector] voidT
   ]
 
 c_classifierResult :: Class
@@ -105,14 +138,34 @@ c_classifierResult =
   addReqIncludes [includeLocal "nupic/types/ClassifierResult.hpp"] $
   makeClass (ident2 "nupic" "types" "ClassifierResult") (Just $ toExtName "ClassifierResult") [] $
   [ mkCtor "new" []
-  -- , mkMethod "initialize" [constUintVectorT, doubleT, doubleT, uintT] voidT
-  -- virtual void compute(UInt recordNum, const vector<UInt> &patternNZ,
-  --                      const vector<UInt> &bucketIdxList,
-  --                      const vector<Real64> &actValueList, bool category,
-  --                      bool learn, bool infer, ClassifierResult &result);
-  -- , mkMethod "compute" [uintT, constUintVectorT, constUintVectorT, constReal64VectorT, boolT, boolT, boolT, c_classifierResult]
-  -- , mkMethod "getDense" [] $ objToHeapT $ c_vector c_charVector
-  -- , mkMethod "setDense" [objT $ c_vector c_charVector] voidT
-  -- , mkMethod "getSparse" [] $ objToHeapT $ c_vector c_uintVector
-  -- , mkMethod "setSparse" [objT $ c_vector c_uintVector] voidT
+  , mkMethod "getClass" [uintT] uintT
+  ]
+
+c_spatialPooler :: Class
+c_spatialPooler =
+  addReqIncludes [includeLocal "nupic/algorithms/SpatialPooler.hpp"] $
+  makeClass (ident3 "nupic" "algorithms" "spatial_pooler" "SpatialPooler") (Just $ toExtName "SpatialPooler") [] $
+  [ mkCtor "new" []
+  , mkMethod "initialize"
+    -- const vector<UInt> inputDimensions, const vector<UInt> columnDimensions,
+    [ constUintVectorT, constUintVectorT
+    --            UInt potentialRadius = 16u, Real potentialPct = 0.5f,
+    , uintT, doubleT
+    --            bool globalInhibition = true, Real localAreaDensity = DISABLED,
+    , boolT, doubleT
+    --            Int numActiveColumnsPerInhArea = 10u, UInt stimulusThreshold = 0u,
+    , intT, uintT
+    --            Real synPermInactiveDec = 0.01f, Real synPermActiveInc = 0.1f,
+    , doubleT, doubleT
+    --            Real synPermConnected = 0.1f, Real minPctOverlapDutyCycles = 0.001f,
+    , doubleT, doubleT
+    --            UInt dutyCyclePeriod = 1000u, Real boostStrength = 0.0f,
+    , uintT, doubleT
+    --            Int seed = 1, UInt spVerbosity = 0u, bool wrapAround = true);
+    , intT, uintT, boolT
+    ] voidT
+   -- virtual void compute(SDR &input, bool learn, SDR &active);
+  , mkMethod "compute" [refT $ objT c_sdr, boolT, refT $ objT c_sdr] voidT
+  , mkMethod "getNumColumns" [] uintT
+  , mkMethod "getIterationNum" [] uintT
   ]
