@@ -1,13 +1,10 @@
 module Main (main) where
 
-import           Foreign.Hoppy.Generator.Language.Haskell (addExport,
-                                                           addImports, indent,
-                                                           sayLn)
-import           Foreign.Hoppy.Generator.Main             (defaultMain)
+import           Foreign.Hoppy.Generator.Main   (defaultMain)
 import           Foreign.Hoppy.Generator.Spec
 import           Foreign.Hoppy.Generator.Std
-import           Foreign.Hoppy.Generator.Std.Vector
 import           Foreign.Hoppy.Generator.Types
+import           Foreign.Nupic.Generator.Vector
 
 main :: IO ()
 main = defaultMain interfaceResult
@@ -25,10 +22,7 @@ interfaceResult = do
 mod_nupic :: Module
 mod_nupic =
   moduleModify' (makeModule "internal" "gen_nupic.hpp" "gen_nupic.cpp") $ do
-    moduleAddExports (toExports c_uintVector)
-    moduleAddExports (toExports c_charVector)
-    moduleAddExports (toExports c_ucharVector)
-    moduleAddExports (toExports c_real64Vector)
+    moduleAddExports vExports
     moduleAddExports
       [ ExportClass c_sdr
       , ExportClass c_sdrClassifier
@@ -67,32 +61,6 @@ c_getTestLabel =
   addReqIncludes [includeLocal "utils.hpp"] $
   makeFn (ident "getTestLabel") Nothing Nonpure [uintT] uintT
 
-c_uintVector :: Contents
-c_uintVector = instantiate' "UIntVector" uintT mempty $ defaultOptions {optValueConversion = Just ConvertValue}
-
-uintVectorT      = objT $ c_vector c_uintVector
-constUintVectorT = constT uintVectorT
-uintVectorT'     = objToHeapT $ c_vector c_uintVector
-
-c_charVector :: Contents
-c_charVector = instantiate' "ByteVector" charT mempty $ defaultOptions {optValueConversion = Just ConvertValue}
-
-charVectorT      = objT $ c_vector c_charVector
-constCharVectorT = constT charVectorT
-charVectorT'     = objToHeapT $ c_vector c_charVector
-
-c_ucharVector :: Contents
-c_ucharVector = instantiate' "UByteVector" ucharT mempty $ defaultOptions {optValueConversion = Just ConvertValue}
-
-ucharVectorT      = objT $ c_vector c_ucharVector
-constUCharVectorT = constT ucharVectorT
-ucharVectorT'     = objToHeapT $ c_vector c_ucharVector
-
-c_real64Vector :: Contents
-c_real64Vector = instantiate' "Real64Vector" doubleT mempty $ defaultOptions {optValueConversion = Just ConvertValue}
-
-constReal64VectorT = constT $ objT $ c_vector c_real64Vector
-
 c_sdr :: Class
 c_sdr =
   addReqIncludes [includeLocal "nupic/types/Sdr.hpp"] $
@@ -106,10 +74,13 @@ c_sdr =
   , mkMethod "setSparse" [uintVectorT] voidT
   ]
 
+sdrT :: Type
+sdrT = objT c_sdr
+
 c_getSDRDimensions :: Function
 c_getSDRDimensions =
   addReqIncludes [includeLocal "utils.hpp"] $
-  makeFn (ident "getSDRDimensions") Nothing Nonpure [objT c_sdr] $ objToHeapT $ c_vector c_uintVector
+  makeFn (ident "getSDRDimensions") Nothing Nonpure [sdrT] uintVectorT'
 
 
 c_sdrClassifier :: Class
@@ -118,7 +89,13 @@ c_sdrClassifier =
   makeClass (ident3 "nupic" "algorithms" "sdr_classifier" "SDRClassifier") (Just $ toExtName "SdrClassifier") [] $
   [ mkCtor "new" []
   , mkMethod "initialize" [refT constUintVectorT, doubleT, doubleT, uintT] voidT
-  , mkMethod "compute" [uintT, refT constUintVectorT, refT constUintVectorT, refT constReal64VectorT, boolT, boolT, boolT, refT $ objT $ c_classifierResult] voidT
+  , mkMethod "compute"
+    [ uintT, refT constUintVectorT
+    , refT constUintVectorT
+    , refT constReal64VectorT
+    , boolT, boolT, boolT
+    , refT classifierResultT
+    ] voidT
   ]
 
 c_classifierResult :: Class
@@ -128,6 +105,9 @@ c_classifierResult =
   [ mkCtor "new" []
   , mkMethod "getClass" [uintT] uintT
   ]
+
+classifierResultT :: Type
+classifierResultT = objT c_classifierResult
 
 c_spatialPooler :: Class
 c_spatialPooler =
@@ -153,7 +133,7 @@ c_spatialPooler =
     , intT, uintT, boolT
     ] voidT
    -- virtual void compute(SDR &input, bool learn, SDR &active);
-  , mkMethod "compute" [refT $ objT c_sdr, boolT, refT $ objT c_sdr] voidT
+  , mkMethod "compute" [refT sdrT, boolT, refT sdrT] voidT
   , mkMethod "getNumColumns" [] uintT
   , mkMethod "getIterationNum" [] uintT
   ]

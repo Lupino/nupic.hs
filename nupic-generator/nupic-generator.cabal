@@ -13,10 +13,12 @@ cabal-version: >=1.10
 -- still aren't shipping it yet.
 library
   hs-source-dirs: src
-  other-modules:
-      Foreign.Nupic.Internal.EmptyGenerator
+  exposed-modules:
+      Foreign.Nupic.Generator.Vector
   build-depends:
       base
+    , hoppy-std
+    , hoppy-generator
   default-language: Haskell2010
   ghc-options: -W -fwarn-incomplete-patterns -fwarn-unused-do-bind
 
@@ -28,5 +30,6 @@ executable nupic-generator
     , haskell-src
     , hoppy-generator >=0.5 && <0.6
     , hoppy-std >=0.5 && <0.6
+    , nupic-generator
   default-language: Haskell2010
   ghc-options: -W -fwarn-incomplete-patterns -fwarn-unused-do-bind
