@@ -26,9 +26,13 @@ mod_nupic =
     moduleAddExports
       [ ExportClass c_sdr
       , ExportClass c_sdrClassifier
+      , ExportFn c_saveSDRClassifier
+      , ExportFn c_loadSDRClassifier
+      , ExportFn c_getSDRDimensions
       , ExportClass c_classifierResult
       , ExportClass c_spatialPooler
-      , ExportFn c_getSDRDimensions
+      , ExportFn c_saveSpatialPooler
+      , ExportFn c_loadSpatialPooler
       , ExportFn c_setup
       , ExportFn c_getTrainImage
       , ExportFn c_getTrainLabel
@@ -98,6 +102,9 @@ c_sdrClassifier =
     ] voidT
   ]
 
+sdrClassifierT :: Type
+sdrClassifierT = objT c_sdrClassifier
+
 c_classifierResult :: Class
 c_classifierResult =
   addReqIncludes [includeLocal "nupic/types/ClassifierResult.hpp"] $
@@ -137,3 +144,26 @@ c_spatialPooler =
   , mkMethod "getNumColumns" [] uintT
   , mkMethod "getIterationNum" [] uintT
   ]
+
+spatialPoolerT :: Type
+spatialPoolerT = objT c_spatialPooler
+
+c_saveSpatialPooler :: Function
+c_saveSpatialPooler =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "saveSpatialPooler") Nothing Nonpure [spatialPoolerT, objT c_string] voidT
+
+c_loadSpatialPooler :: Function
+c_loadSpatialPooler =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "loadSpatialPooler") Nothing Nonpure [refT spatialPoolerT, objT c_string] voidT
+
+c_saveSDRClassifier :: Function
+c_saveSDRClassifier =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "saveSDRClassifier") Nothing Nonpure [sdrClassifierT, objT c_string] voidT
+
+c_loadSDRClassifier :: Function
+c_loadSDRClassifier =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "loadSDRClassifier") Nothing Nonpure [refT sdrClassifierT, objT c_string] voidT

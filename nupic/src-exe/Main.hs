@@ -31,9 +31,6 @@ main = do
 
   setup
 
-  -- trainIdxs <- getTrainIdxs
-  -- trainIdxs' <- FHR.toContents trainIdxs :: IO [F.CUInt]
-
   putStrLn $ "Start training"
   rng <- newStdGen
 
@@ -51,10 +48,12 @@ main = do
 
   putStrLn "End training"
 
-  -- testIdxs <- getTestIdxs
-  -- testIdxs' <- FHR.toContents testIdxs :: IO [F.CUInt]
+  saveSpatialPooler sp "sp.data"
+  saveSDRClassifier clsr "clsr.data"
+  -- loadSpatialPooler sp "sp.data"
+  -- loadSDRClassifier clsr "clsr.data"
 
-  putStrLn $ "Start testing" -- ++ show (length testIdxs')
+  putStrLn $ "Start testing"
   r <- flip mapM [0..9999] $ \idx -> do
     image <- getTestImage idx
     label <- getTestLabel idx

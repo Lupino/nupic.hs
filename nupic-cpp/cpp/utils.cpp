@@ -31,3 +31,29 @@ unsigned int getTestLabel(unsigned int idx) {
   const unsigned int label  = g_dataset.test_labels.at(idx);
   return label;
 }
+
+void saveSpatialPooler(nupic::algorithms::spatial_pooler::SpatialPooler sp, std::string path) {
+  ofstream outfile (path);
+  sp.save(outfile);
+  outfile.flush();
+  outfile.close();
+}
+
+void loadSpatialPooler(nupic::algorithms::spatial_pooler::SpatialPooler &sp, std::string path) {
+  std::ifstream file(path);
+  sp.load(file);
+  file.close();
+}
+
+void saveSDRClassifier(nupic::algorithms::sdr_classifier::SDRClassifier sp, std::string path) {
+  ofstream outfile (path);
+  sp.save(outfile);
+  outfile.flush();
+  outfile.close();
+}
+
+void loadSDRClassifier(nupic::algorithms::sdr_classifier::SDRClassifier &sp, std::string path) {
+  std::ifstream file(path);
+  sp.load(file);
+  file.close();
+}
