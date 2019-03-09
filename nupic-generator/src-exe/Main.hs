@@ -5,6 +5,7 @@ import           Foreign.Hoppy.Generator.Spec
 import           Foreign.Hoppy.Generator.Std
 import           Foreign.Hoppy.Generator.Types
 import           Foreign.Nupic.Generator.Algorithms
+import           Foreign.Nupic.Generator.Encoders
 import           Foreign.Nupic.Generator.Types
 import           Foreign.Nupic.Generator.Vector
 
@@ -24,7 +25,7 @@ interfaceResult = do
 mod_nupic :: Module
 mod_nupic =
   moduleModify' (makeModule "internal" "gen_nupic.hpp" "gen_nupic.cpp") $ do
-    moduleAddExports $ vExports ++ typeExports ++ algorithmExports
+    moduleAddExports $ vExports ++ typeExports ++ algorithmExports ++ encoderExports
     moduleAddExports
       [ ExportFn c_setup
       , ExportFn c_getTrainImage

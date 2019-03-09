@@ -17,6 +17,7 @@ library
       Foreign.Nupic.Generator.Vector
     , Foreign.Nupic.Generator.Algorithms
     , Foreign.Nupic.Generator.Types
+    , Foreign.Nupic.Generator.Encoders
   build-depends:
       base
     , hoppy-std
