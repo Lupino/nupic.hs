@@ -63,6 +63,8 @@ c_spatialPooler =
   , mkMethod "compute" [refT sdrT, boolT, refT sdrT] voidT
   , mkMethod "getNumColumns" [] uintT
   , mkMethod "getIterationNum" [] uintT
+  , mkMethod "setGlobalInhibition" [boolT] voidT
+  , mkMethod "getGlobalInhibition" [] boolT
   ]
 
 spatialPoolerT :: Type
