@@ -48,10 +48,10 @@ main = do
 
   putStrLn "End training"
 
-  saveSpatialPooler sp "sp.data"
-  saveSDRClassifier clsr "clsr.data"
-  -- loadSpatialPooler sp "sp.data"
-  -- loadSDRClassifier clsr "clsr.data"
+  -- spatialPooler_save sp "sp.data"
+  -- sdrClassifier_save clsr "clsr.data"
+  spatialPooler_load sp "sp.data"
+  sdrClassifier_load clsr "clsr.data"
 
   putStrLn $ "Start testing"
   r <- flip mapM [0..9999] $ \idx -> do

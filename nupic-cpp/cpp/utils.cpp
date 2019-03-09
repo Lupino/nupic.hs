@@ -32,28 +32,28 @@ unsigned int getTestLabel(unsigned int idx) {
   return label;
 }
 
-void saveSpatialPooler(nupic::algorithms::spatial_pooler::SpatialPooler sp, std::string path) {
+void spatialPooler_save(nupic::algorithms::spatial_pooler::SpatialPooler sp, std::string path) {
   ofstream outfile (path);
   sp.save(outfile);
   outfile.flush();
   outfile.close();
 }
 
-void loadSpatialPooler(nupic::algorithms::spatial_pooler::SpatialPooler &sp, std::string path) {
+void spatialPooler_load(nupic::algorithms::spatial_pooler::SpatialPooler &sp, std::string path) {
   std::ifstream file(path);
   sp.load(file);
   file.close();
 }
 
-void saveSDRClassifier(nupic::algorithms::sdr_classifier::SDRClassifier sp, std::string path) {
+void sdrClassifier_save(nupic::algorithms::sdr_classifier::SDRClassifier clsr, std::string path) {
   ofstream outfile (path);
-  sp.save(outfile);
+  clsr.save(outfile);
   outfile.flush();
   outfile.close();
 }
 
-void loadSDRClassifier(nupic::algorithms::sdr_classifier::SDRClassifier &sp, std::string path) {
+void sdrClassifier_load(nupic::algorithms::sdr_classifier::SDRClassifier &clsr, std::string path) {
   std::ifstream file(path);
-  sp.load(file);
+  clsr.load(file);
   file.close();
 }

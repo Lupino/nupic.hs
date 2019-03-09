@@ -18,8 +18,8 @@ unsigned int getTestLabel(unsigned int idx);
 
 std::vector<nupic::UInt> getSDRDimensions(nupic::SDR self);
 
-void saveSpatialPooler(nupic::algorithms::spatial_pooler::SpatialPooler sp, std::string path);
-void loadSpatialPooler(nupic::algorithms::spatial_pooler::SpatialPooler &sp, std::string path);
-void saveSDRClassifier(nupic::algorithms::sdr_classifier::SDRClassifier sp, std::string path);
-void loadSDRClassifier(nupic::algorithms::sdr_classifier::SDRClassifier &sp, std::string path);
+void spatialPooler_save(nupic::algorithms::spatial_pooler::SpatialPooler sp, std::string path);
+void spatialPooler_load(nupic::algorithms::spatial_pooler::SpatialPooler &sp, std::string path);
+void sdrClassifier_save(nupic::algorithms::sdr_classifier::SDRClassifier clsr, std::string path);
+void sdrClassifier_load(nupic::algorithms::sdr_classifier::SDRClassifier &clsr, std::string path);
 #endif // end ifndef UTILS_HPP

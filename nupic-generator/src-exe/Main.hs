@@ -26,13 +26,13 @@ mod_nupic =
     moduleAddExports
       [ ExportClass c_sdr
       , ExportClass c_sdrClassifier
-      , ExportFn c_saveSDRClassifier
-      , ExportFn c_loadSDRClassifier
+      , ExportFn c_sdrClassifier_save
+      , ExportFn c_sdrClassifier_load
       , ExportFn c_getSDRDimensions
       , ExportClass c_classifierResult
       , ExportClass c_spatialPooler
-      , ExportFn c_saveSpatialPooler
-      , ExportFn c_loadSpatialPooler
+      , ExportFn c_spatialPooler_save
+      , ExportFn c_spatialPooler_load
       , ExportFn c_setup
       , ExportFn c_getTrainImage
       , ExportFn c_getTrainLabel
@@ -148,22 +148,22 @@ c_spatialPooler =
 spatialPoolerT :: Type
 spatialPoolerT = objT c_spatialPooler
 
-c_saveSpatialPooler :: Function
-c_saveSpatialPooler =
+c_spatialPooler_save :: Function
+c_spatialPooler_save =
   addReqIncludes [includeLocal "utils.hpp"] $
-  makeFn (ident "saveSpatialPooler") Nothing Nonpure [spatialPoolerT, objT c_string] voidT
+  makeFn (ident "spatialPooler_save") Nothing Nonpure [spatialPoolerT, objT c_string] voidT
 
-c_loadSpatialPooler :: Function
-c_loadSpatialPooler =
+c_spatialPooler_load :: Function
+c_spatialPooler_load =
   addReqIncludes [includeLocal "utils.hpp"] $
-  makeFn (ident "loadSpatialPooler") Nothing Nonpure [refT spatialPoolerT, objT c_string] voidT
+  makeFn (ident "spatialPooler_load") Nothing Nonpure [refT spatialPoolerT, objT c_string] voidT
 
-c_saveSDRClassifier :: Function
-c_saveSDRClassifier =
+c_sdrClassifier_save :: Function
+c_sdrClassifier_save =
   addReqIncludes [includeLocal "utils.hpp"] $
-  makeFn (ident "saveSDRClassifier") Nothing Nonpure [sdrClassifierT, objT c_string] voidT
+  makeFn (ident "sdrClassifier_save") Nothing Nonpure [sdrClassifierT, objT c_string] voidT
 
-c_loadSDRClassifier :: Function
-c_loadSDRClassifier =
+c_sdrClassifier_load :: Function
+c_sdrClassifier_load =
   addReqIncludes [includeLocal "utils.hpp"] $
-  makeFn (ident "loadSDRClassifier") Nothing Nonpure [refT sdrClassifierT, objT c_string] voidT
+  makeFn (ident "sdrClassifier_load") Nothing Nonpure [refT sdrClassifierT, objT c_string] voidT
