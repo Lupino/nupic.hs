@@ -22,20 +22,12 @@ c_sdrClassifier =
     , boolT, boolT, boolT
     , refT classifierResultT
     ] voidT
+  , mkMethod "saveToFile" [objT c_string] voidT
+  , mkMethod "loadFromFile" [objT c_string] voidT
   ]
 
 sdrClassifierT :: Type
 sdrClassifierT = objT c_sdrClassifier
-
-c_sdrClassifier_save :: Function
-c_sdrClassifier_save =
-  addReqIncludes [includeLocal "utils.hpp"] $
-  makeFn (ident "sdrClassifier_save") Nothing Nonpure [sdrClassifierT, objT c_string] voidT
-
-c_sdrClassifier_load :: Function
-c_sdrClassifier_load =
-  addReqIncludes [includeLocal "utils.hpp"] $
-  makeFn (ident "sdrClassifier_load") Nothing Nonpure [refT sdrClassifierT, objT c_string] voidT
 
 c_spatialPooler :: Class
 c_spatialPooler =
@@ -66,20 +58,12 @@ c_spatialPooler =
   , mkMethod "getIterationNum" [] uintT
   , mkMethod "setGlobalInhibition" [boolT] voidT
   , mkMethod "getGlobalInhibition" [] boolT
+  , mkMethod "saveToFile" [objT c_string] voidT
+  , mkMethod "loadFromFile" [objT c_string] voidT
   ]
 
 spatialPoolerT :: Type
 spatialPoolerT = objT c_spatialPooler
-
-c_spatialPooler_save :: Function
-c_spatialPooler_save =
-  addReqIncludes [includeLocal "utils.hpp"] $
-  makeFn (ident "spatialPooler_save") Nothing Nonpure [spatialPoolerT, objT c_string] voidT
-
-c_spatialPooler_load :: Function
-c_spatialPooler_load =
-  addReqIncludes [includeLocal "utils.hpp"] $
-  makeFn (ident "spatialPooler_load") Nothing Nonpure [refT spatialPoolerT, objT c_string] voidT
 
 c_cells4 :: Class
 c_cells4 =
@@ -104,10 +88,39 @@ c_cells4 =
   , mkCtor "new0" []
   -- void compute(Real *input, Real *output, bool doInference, bool doLearning);
   , mkMethod "compute" [ptrT floatT, ptrT floatT, boolT, boolT] voidT
+  -- , mkMethod "nSegments"                  [] uintT
   , mkMethod "nCells"                     [] uintT
   , mkMethod "nColumns"                   [] uintT
   , mkMethod "nCellsPerCol"               [] uintT
+  -- , mkMethod "getPermInitial"             [] floatT
+  -- , mkMethod "getMinThreshold"            [] uintT
+  -- , mkMethod "getPermConnected"           [] floatT
+  -- , mkMethod "getNewSynapseCount"         [] uintT
+  -- , mkMethod "getPermInc"                 [] floatT
+  -- , mkMethod "getPermDec"                 [] floatT
+  -- , mkMethod "getPermMax"                 [] floatT
+  -- , mkMethod "getGlobalDecay"             [] floatT
+  -- , mkMethod "getActivationThreshold"     [] uintT
+  -- , mkMethod "getDoPooling"               [] boolT
+  -- , mkMethod "getSegUpdateValidDuration"  [] uintT
+  -- , mkMethod "getVerbosity"               [] uintT
+  -- , mkMethod "getMaxAge"                  [] uintT
+  -- , mkMethod "getPamLength"               [] uintT
+  -- , mkMethod "getMaxInfBacktrack"         [] uintT
+  -- , mkMethod "getMaxLrnBacktrack"         [] uintT
+  -- , mkMethod "getPamCounter"              [] uintT
+  -- , mkMethod "getMaxSeqLength"            [] uintT
+  -- , mkMethod "getAvgLearnedSeqLength"     [] floatT
+  -- , mkMethod "getNLrnIterations"          [] uintT
+  -- , mkMethod "getMaxSegmentsPerCell"      [] intT
+  -- , mkMethod "getMaxSynapsesPerSegment"   [] intT
+  -- , mkMethod "getCheckSynapseConsistency" [] boolT
+  , mkMethod "saveToFile" [objT c_string] voidT
+  , mkMethod "loadFromFile" [objT c_string] voidT
   ]
+
+cells4T :: Type
+cells4T = objT c_cells4
 
 c_anomalyMode :: CppEnum
 c_anomalyMode = makeEnum (ident3 "nupic" "algorithms" "anomaly" "AnomalyMode") (Just $ toExtName "AnomalyMode") $
@@ -124,15 +137,21 @@ c_anomaly =
     , mkMethod "compute" [refT uintVectorT, refT uintVectorT, intT] floatT
     ]
 
+c_anomalyLikelihood :: Class
+c_anomalyLikelihood =
+  addReqIncludes [includeLocal "nupic/algorithms/AnomalyLikelihood.hpp"] $
+  makeClass (ident3 "nupic" "algorithms" "anomaly" "AnomalyLikelihood") (Just $ toExtName "AnomalyLikelihood") [] $
+    [ mkCtor "new" [ uintT, uintT, uintT, uintT, uintT ]
+    , mkCtor "new0" []
+    , mkMethod "anomalyProbability" [floatT, intT] floatT
+    ]
+
 algorithmExports :: [Export]
 algorithmExports =
   [ ExportClass c_sdrClassifier
-  , ExportFn c_sdrClassifier_save
-  , ExportFn c_sdrClassifier_load
   , ExportClass c_spatialPooler
-  , ExportFn c_spatialPooler_save
-  , ExportFn c_spatialPooler_load
   , ExportClass c_cells4
   , ExportEnum c_anomalyMode
   , ExportClass c_anomaly
+  , ExportClass c_anomalyLikelihood
   ]

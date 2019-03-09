@@ -50,10 +50,10 @@ mnist = do
 
   putStrLn "End training"
 
-  spatialPooler_save sp "sp.data"
-  sdrClassifier_save clsr "clsr.data"
-  -- spatialPooler_load sp "sp.data"
-  -- sdrClassifier_load clsr "clsr.data"
+  spatialPooler_saveToFile sp "spatial_pooler.txt"
+  sdrClassifier_saveToFile clsr "sdr_calssifier.txt"
+  -- spatialPooler_load sp "spatial_pooler.txt"
+  -- sdrClassifier_load clsr "sdr_calssifier.txt"
 
   putStrLn $ "Start testing"
   r <- flip mapM [0..9999] $ \idx -> do
@@ -73,8 +73,8 @@ mnist = do
 
   print $ fromIntegral (sum (map (\vr -> if vr then 1 else 0) r)) / fromIntegral (length r)
 
-main :: IO ()
-main = do
+hotsp :: IO ()
+hotsp = do
   let dim_input = 10000
       cols = 2048
       cells = 10
@@ -118,3 +118,8 @@ main = do
   values <- replicateM 5000 $ getStdRandom (randomR (-100.0,100.0)) :: IO [Float]
   r <- foldM train (replicate (fromIntegral ncells) 0) values
   print r
+  putStrLn "SaveFile"
+  cells4_saveToFile tp "cells4.txt"
+
+main :: IO ()
+main = hotsp

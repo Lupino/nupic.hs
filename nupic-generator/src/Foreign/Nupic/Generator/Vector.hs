@@ -12,15 +12,15 @@ module Foreign.Nupic.Generator.Vector
   , vExports
   ) where
 
-import           Foreign.Hoppy.Generator.Spec       (Export, Type)
+import           Foreign.Hoppy.Generator.Spec
 import           Foreign.Hoppy.Generator.Std        (ValueConversion (..))
 import           Foreign.Hoppy.Generator.Std.Vector (Contents (..),
                                                      Options (..),
                                                      defaultOptions,
                                                      instantiate', toExports)
 import           Foreign.Hoppy.Generator.Types      (charT, constT, doubleT,
-                                                     objT, objToHeapT, ucharT,
-                                                     uintT)
+                                                     floatT, objT, objToHeapT,
+                                                     ptrT, ucharT, uintT)
 
 options :: Options
 options = defaultOptions  {optValueConversion = Just ConvertValue}
