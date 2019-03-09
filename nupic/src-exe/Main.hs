@@ -14,20 +14,18 @@ main = do
   v <- FHR.fromContents [28, 28]  :: IO UIntVector
   sdr_initialize input v
 
-  clsr <- sdrClassifier_new
   v1 <- FHR.fromContents [0] :: IO UIntVector
-  sp <- spatialPooler_new
+  clsr <- sdrClassifier_new v1 0.001 3 1
 
   dims <- sdr_dimensions input
 
-  spatialPooler_initialize sp dims v 5 0.5 False 0.20 (-1) 6 0.005 0.01 0.4 0.001 1402 2.5 93 1 False
+  sp <- spatialPooler_new_ dims v 5 0.5 False 0.20 (-1) 6 0.005 0.01 0.4 0.001 1402 2.5 93 1 False
 
   numColums <- spatialPooler_getNumColumns sp
 
   vv <- FHR.fromContents [numColums] :: IO UIntVector
 
   sdr_initialize columns vv
-  sdrClassifier_initialize clsr v1 0.001 3 1
 
   setup
 
@@ -48,10 +46,10 @@ main = do
 
   putStrLn "End training"
 
-  -- spatialPooler_save sp "sp.data"
-  -- sdrClassifier_save clsr "clsr.data"
-  spatialPooler_load sp "sp.data"
-  sdrClassifier_load clsr "clsr.data"
+  spatialPooler_save sp "sp.data"
+  sdrClassifier_save clsr "clsr.data"
+  -- spatialPooler_load sp "sp.data"
+  -- sdrClassifier_load clsr "clsr.data"
 
   putStrLn $ "Start testing"
   r <- flip mapM [0..9999] $ \idx -> do

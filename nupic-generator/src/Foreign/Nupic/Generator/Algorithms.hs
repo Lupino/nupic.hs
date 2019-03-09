@@ -14,8 +14,7 @@ c_sdrClassifier :: Class
 c_sdrClassifier =
   addReqIncludes [includeLocal "nupic/algorithms/SDRClassifier.hpp"] $
   makeClass (ident3 "nupic" "algorithms" "sdr_classifier" "SDRClassifier") (Just $ toExtName "SdrClassifier") [] $
-  [ mkCtor "new" []
-  , mkMethod "initialize" [refT constUintVectorT, doubleT, doubleT, uintT] voidT
+  [ mkCtor "new" [refT constUintVectorT, doubleT, doubleT, uintT]
   , mkMethod "compute"
     [ uintT, refT constUintVectorT
     , refT constUintVectorT
@@ -42,25 +41,24 @@ c_spatialPooler :: Class
 c_spatialPooler =
   addReqIncludes [includeLocal "nupic/algorithms/SpatialPooler.hpp"] $
   makeClass (ident3 "nupic" "algorithms" "spatial_pooler" "SpatialPooler") (Just $ toExtName "SpatialPooler") [] $
-  [ mkCtor "new" []
-  , mkMethod "initialize"
-    -- const vector<UInt> inputDimensions, const vector<UInt> columnDimensions,
+  [ mkCtor "new" [ constUintVectorT, constUintVectorT ]
+  , mkCtor "new_"
     [ constUintVectorT, constUintVectorT
     --            UInt potentialRadius = 16u, Real potentialPct = 0.5f,
-    , uintT, doubleT
+    , uintT, floatT
     --            bool globalInhibition = true, Real localAreaDensity = DISABLED,
-    , boolT, doubleT
+    , boolT, floatT
     --            Int numActiveColumnsPerInhArea = 10u, UInt stimulusThreshold = 0u,
     , intT, uintT
     --            Real synPermInactiveDec = 0.01f, Real synPermActiveInc = 0.1f,
-    , doubleT, doubleT
+    , floatT, floatT
     --            Real synPermConnected = 0.1f, Real minPctOverlapDutyCycles = 0.001f,
-    , doubleT, doubleT
+    , floatT, floatT
     --            UInt dutyCyclePeriod = 1000u, Real boostStrength = 0.0f,
-    , uintT, doubleT
+    , uintT, floatT
     --            Int seed = 1, UInt spVerbosity = 0u, bool wrapAround = true);
     , intT, uintT, boolT
-    ] voidT
+    ]
    -- virtual void compute(SDR &input, bool learn, SDR &active);
   , mkMethod "compute" [refT sdrT, boolT, refT sdrT] voidT
   , mkMethod "getNumColumns" [] uintT
