@@ -64,8 +64,23 @@ ucharVectorT'     = objToHeapT $ c_vector c_ucharVector
 c_real64Vector :: Contents
 c_real64Vector = instantiate' "Real64Vector" doubleT mempty options
 
+real64VectorT :: Type
+real64VectorT = objT $ c_vector c_real64Vector
+
 constReal64VectorT :: Type
-constReal64VectorT = constT $ objT $ c_vector c_real64Vector
+constReal64VectorT = constT real64VectorT
+
+c_realVector :: Contents
+c_realVector = instantiate' "RealVector" doubleT mempty options
+
+realVectorT :: Type
+realVectorT = objT $ c_vector c_realVector
+
+realVectorT' :: Type
+realVectorT' = objToHeapT $ c_vector c_realVector
+
+constRealVectorT :: Type
+constRealVectorT = constT realVectorT
 
 vExports :: [Export]
 vExports =
@@ -73,3 +88,4 @@ vExports =
   ++ toExports c_charVector
   ++ toExports c_ucharVector
   ++ toExports c_real64Vector
+  ++ toExports c_realVector
