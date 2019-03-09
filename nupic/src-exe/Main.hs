@@ -19,7 +19,7 @@ main = do
 
   dims <- sdr_dimensions input
 
-  sp <- spatialPooler_new_ dims v 5 0.5 False 0.20 (-1) 6 0.005 0.01 0.4 0.001 1402 2.5 93 1 False
+  sp <- spatialPooler_new dims v 5 0.5 False 0.20 (-1) 6 0.005 0.01 0.4 0.001 1402 2.5 93 1 False
 
   numColums <- spatialPooler_getNumColumns sp
 

@@ -41,8 +41,8 @@ c_spatialPooler :: Class
 c_spatialPooler =
   addReqIncludes [includeLocal "nupic/algorithms/SpatialPooler.hpp"] $
   makeClass (ident3 "nupic" "algorithms" "spatial_pooler" "SpatialPooler") (Just $ toExtName "SpatialPooler") [] $
-  [ mkCtor "new" [ constUintVectorT, constUintVectorT ]
-  , mkCtor "new_"
+  [ mkCtor "new2" [ constUintVectorT, constUintVectorT ]
+  , mkCtor "new"
     [ constUintVectorT, constUintVectorT
     --            UInt potentialRadius = 16u, Real potentialPct = 0.5f,
     , uintT, floatT
