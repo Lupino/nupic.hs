@@ -71,7 +71,7 @@ constReal64VectorT :: Type
 constReal64VectorT = constT real64VectorT
 
 c_realVector :: Contents
-c_realVector = instantiate' "RealVector" doubleT mempty options
+c_realVector = instantiate' "RealVector" floatT mempty options
 
 realVectorT :: Type
 realVectorT = objT $ c_vector c_realVector

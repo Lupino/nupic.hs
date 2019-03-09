@@ -61,6 +61,7 @@ c_spatialPooler =
     ]
    -- virtual void compute(SDR &input, bool learn, SDR &active);
   , mkMethod "compute" [refT sdrT, boolT, refT sdrT] voidT
+  , mkMethod' "compute" "computeWithPtr" [ptrT uintT, boolT, ptrT uintT] voidT
   , mkMethod "getNumColumns" [] uintT
   , mkMethod "getIterationNum" [] uintT
   , mkMethod "setGlobalInhibition" [boolT] voidT
@@ -103,6 +104,9 @@ c_cells4 =
   , mkCtor "new0" []
   -- void compute(Real *input, Real *output, bool doInference, bool doLearning);
   , mkMethod "compute" [ptrT floatT, ptrT floatT, boolT, boolT] voidT
+  , mkMethod "nCells"                     [] uintT
+  , mkMethod "nColumns"                   [] uintT
+  , mkMethod "nCellsPerCol"               [] uintT
   ]
 
 c_anomalyMode :: CppEnum
