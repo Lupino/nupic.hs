@@ -80,6 +80,31 @@ c_spatialPooler_load =
   addReqIncludes [includeLocal "utils.hpp"] $
   makeFn (ident "spatialPooler_load") Nothing Nonpure [refT spatialPoolerT, objT c_string] voidT
 
+c_cells4 :: Class
+c_cells4 =
+  addReqIncludes [includeLocal "nupic/algorithms/Cells4.hpp"] $
+  makeClass (ident3 "nupic" "algorithms" "Cells4" "Cells4") (Just $ toExtName "Cells4") [] $
+    [ mkCtor "new"
+      [ uintT, uintT, uintT
+      -- Cells4(UInt nColumns = 0, UInt nCellsPerCol = 0, UInt activationThreshold = 1,
+      , uintT, uintT
+      --        UInt minThreshold = 1, UInt newSynapseCount = 1,
+      , uintT, floatT
+      --        UInt segUpdateValidDuration = 1, Real permInitial = .5,
+      , floatT, floatT, floatT
+      --        Real permConnected = .8, Real permMax = 1, Real permDec = .1,
+      , floatT, floatT, boolT
+      --        Real permInc = .1, Real globalDecay = 0, bool doPooling = false,
+      , intT, boolT
+      --        int seed = -1, bool initFromCpp = true,
+      , boolT
+      --        bool checkSynapseConsistency = false);
+      ]
+  , mkCtor "new0" []
+  -- void compute(Real *input, Real *output, bool doInference, bool doLearning);
+  , mkMethod "compute" [ptrT floatT, ptrT floatT, boolT, boolT] voidT
+  ]
+
 algorithmExports :: [Export]
 algorithmExports =
   [ ExportClass c_sdrClassifier
@@ -88,4 +113,5 @@ algorithmExports =
   , ExportClass c_spatialPooler
   , ExportFn c_spatialPooler_save
   , ExportFn c_spatialPooler_load
+  , ExportClass c_cells4
   ]
