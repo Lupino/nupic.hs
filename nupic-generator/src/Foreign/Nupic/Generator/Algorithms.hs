@@ -105,6 +105,21 @@ c_cells4 =
   , mkMethod "compute" [ptrT floatT, ptrT floatT, boolT, boolT] voidT
   ]
 
+c_anomalyMode :: CppEnum
+c_anomalyMode = makeEnum (ident3 "nupic" "algorithms" "anomaly" "AnomalyMode") (Just $ toExtName "AnomalyMode") $
+  [ (0, ["PURE"])
+  , (1, ["LIKELIHOOD"])
+  , (2, ["WEIGHTED"])
+  ]
+
+c_anomaly :: Class
+c_anomaly =
+  addReqIncludes [includeLocal "nupic/algorithms/Anomaly.hpp"] $
+  makeClass (ident3 "nupic" "algorithms" "anomaly" "Anomaly") (Just $ toExtName "Anomaly") [] $
+    [ mkCtor "new" [ uintT, enumT c_anomalyMode, floatT ]
+    , mkMethod "compute" [refT uintVectorT, refT uintVectorT, intT] floatT
+    ]
+
 algorithmExports :: [Export]
 algorithmExports =
   [ ExportClass c_sdrClassifier
@@ -114,4 +129,6 @@ algorithmExports =
   , ExportFn c_spatialPooler_save
   , ExportFn c_spatialPooler_load
   , ExportClass c_cells4
+  , ExportEnum c_anomalyMode
+  , ExportClass c_anomaly
   ]
