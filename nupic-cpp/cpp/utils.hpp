@@ -16,7 +16,7 @@ std::vector<unsigned char> getTestImage(unsigned int idx);
 
 unsigned int getTestLabel(unsigned int idx);
 
-std::vector<nupic::UInt> getSDRDimensions(nupic::SDR self);
+std::vector<nupic::UInt> sdr_dimensions(nupic::SDR self);
 
 void spatialPooler_save(nupic::algorithms::spatial_pooler::SpatialPooler sp, std::string path);
 void spatialPooler_load(nupic::algorithms::spatial_pooler::SpatialPooler &sp, std::string path);

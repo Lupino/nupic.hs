@@ -2,7 +2,7 @@
 #include <vector>
 #include <mnist/mnist_reader.hpp> // MNIST data itself + read methods, namespace mnist::
 
-std::vector<nupic::UInt> getSDRDimensions(nupic::SDR self) {
+std::vector<nupic::UInt> sdr_dimensions(nupic::SDR self) {
     return self.dimensions;
 }
 

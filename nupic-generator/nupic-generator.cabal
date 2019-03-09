@@ -15,6 +15,8 @@ library
   hs-source-dirs: src
   exposed-modules:
       Foreign.Nupic.Generator.Vector
+    , Foreign.Nupic.Generator.Algorithms
+    , Foreign.Nupic.Generator.Types
   build-depends:
       base
     , hoppy-std

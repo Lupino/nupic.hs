@@ -18,7 +18,7 @@ main = do
   v1 <- FHR.fromContents [0] :: IO UIntVector
   sp <- spatialPooler_new
 
-  dims <- getSDRDimensions input
+  dims <- sdr_dimensions input
 
   spatialPooler_initialize sp dims v 5 0.5 False 0.20 (-1) 6 0.005 0.01 0.4 0.001 1402 2.5 93 1 False
 
