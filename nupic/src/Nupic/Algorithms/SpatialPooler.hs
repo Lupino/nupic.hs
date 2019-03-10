@@ -11,22 +11,19 @@ module Nupic.Algorithms.SpatialPooler
   , getIterationNum
   , saveToFile
   , loadFromFile
-  , module Exports
   ) where
 
 import           Foreign.C              (CUInt)
-import           Foreign.Hoppy.Runtime  (fromContents, toContents)
-import           Foreign.Marshal.Array  (newArray, peekArray)
-import           Foreign.Nupic.Internal (ByteVector, Real64Vector,
-                                         SpatialPooler, UByteVector, UIntVector)
-import           Foreign.Nupic.Internal as Exports (spatialPooler_compute,
-                                                    spatialPooler_computeWithPtr,
-                                                    spatialPooler_getIterationNum,
-                                                    spatialPooler_getNumColumns,
-                                                    spatialPooler_loadFromFile,
-                                                    spatialPooler_new,
-                                                    spatialPooler_saveToFile)
-import           Nupic.Types.Sdr        (Sdr)
+import           Foreign.Hoppy.Runtime  (fromContents)
+import           Foreign.Nupic.Internal (UIntVector, spatialPooler_compute,
+                                         spatialPooler_computeWithPtr,
+                                         spatialPooler_getIterationNum,
+                                         spatialPooler_getNumColumns,
+                                         spatialPooler_loadFromFile,
+                                         spatialPooler_new,
+                                         spatialPooler_saveToFile)
+import qualified Foreign.Nupic.Internal as I (SpatialPooler)
+import           Nupic.Types.Sdr        (Sdr, getDense, newSdr, setDense)
 
 data Options = Options
   { inputDimensions            :: [CUInt]
@@ -69,11 +66,13 @@ options v0 v1 = Options
   , wrapAround                 = True
   }
 
+data SpatialPooler = SpatialPooler Options I.SpatialPooler
+
 new :: Options -> IO SpatialPooler
-new Options {..} = do
+new opt@Options {..} = do
   v0 <- fromContents inputDimensions :: IO UIntVector
   v1 <- fromContents columnDimensions :: IO UIntVector
-  spatialPooler_new
+  sp <- spatialPooler_new
     v0
     v1
     potentialRadius
@@ -92,24 +91,29 @@ new Options {..} = do
     spVerbosity
     wrapAround
 
-compute :: SpatialPooler -> Sdr -> Bool -> Sdr -> IO ()
-compute = spatialPooler_compute
+  return $ SpatialPooler opt sp
 
-compute_ :: SpatialPooler -> [CUInt] -> Bool -> [CUInt] -> IO [CUInt]
-compute_ sp input learn active = do
-  input' <- newArray input
-  active' <- newArray active
-  spatialPooler_computeWithPtr sp input' learn active'
-  peekArray (length active) active'
+compute_ :: SpatialPooler -> Sdr -> Bool -> IO Sdr
+compute_ (SpatialPooler opt sp) sdr learn = do
+  sdrO <- newSdr $ columnDimensions opt
+  spatialPooler_compute sp sdr learn sdrO
+  return sdrO
+
+compute :: SpatialPooler -> [CUInt] -> Bool -> IO [CUInt]
+compute sp@(SpatialPooler opt _) input learn = do
+  sdrI <- newSdr $ inputDimensions opt
+  setDense sdrI $ map fromIntegral input
+  sdrO <- compute_ sp sdrI learn
+  map fromIntegral <$> getDense sdrO
 
 getIterationNum :: SpatialPooler -> IO CUInt
-getIterationNum = spatialPooler_getIterationNum
+getIterationNum (SpatialPooler _ sp) = spatialPooler_getIterationNum sp
 
 getNumColumns :: SpatialPooler -> IO CUInt
-getNumColumns = spatialPooler_getNumColumns
+getNumColumns (SpatialPooler _ sp)= spatialPooler_getNumColumns sp
 
 saveToFile :: SpatialPooler -> FilePath -> IO ()
-saveToFile = spatialPooler_saveToFile
+saveToFile (SpatialPooler _ sp)= spatialPooler_saveToFile sp
 
 loadFromFile :: SpatialPooler -> FilePath -> IO ()
-loadFromFile = spatialPooler_loadFromFile
+loadFromFile (SpatialPooler _ sp) = spatialPooler_loadFromFile sp

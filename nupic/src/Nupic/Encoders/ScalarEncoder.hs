@@ -4,7 +4,6 @@ module Nupic.Encoders.ScalarEncoder
   , getOutputWidth
   ) where
 
-import           Control.Monad          (void)
 import           Foreign.C              (CUInt)
 import           Foreign.Marshal.Array  (newArray, peekArray)
 import           Foreign.Nupic.Internal (ScalarEncoder,
@@ -20,9 +19,10 @@ new = scalarEncoder_new
 getOutputWidth :: ScalarEncoder -> IO CUInt
 getOutputWidth = scalarEncoder_getOutputWidth
 
-encode :: ScalarEncoder -> Float -> IO [CUInt]
+encode :: ScalarEncoder -> Float -> IO (Int, [CUInt])
 encode sc input = do
   len <- fromIntegral <$> getOutputWidth sc
   ptr <- newArray $ replicate len 0
-  void $ scalarEncoder_encodeIntoArray sc input ptr
-  peekArray len ptr
+  bucketId <- scalarEncoder_encodeIntoArray sc input ptr
+  arr <- peekArray len ptr
+  return (bucketId, arr)

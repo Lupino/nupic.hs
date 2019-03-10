@@ -23,8 +23,6 @@ mnist = do
   clsr <- CLSR.new [0] 0.001 3 1
   dims <- getDimensions input
   sp <- SP.new $ SP.Options dims [28, 28] 5 0.5 False 0.20 (-1) 6 0.005 0.01 0.4 0.001 1402 2.5 93 1 False
-  numColums <- SP.getNumColumns sp
-  columns <- newSdr [numColums]
 
   setup
 
@@ -35,7 +33,7 @@ mnist = do
     image <- getTrainImage idx
     label <- getTrainLabel idx
     sdr_setDenseWithUChar input image
-    SP.compute sp input True columns
+    columns <- SP.compute_ sp input True
     iterNum <- SP.getIterationNum sp
     sparse <- getSparse columns
     void $ CLSR.compute clsr iterNum sparse [label] [fromIntegral label] True True False
@@ -52,7 +50,7 @@ mnist = do
     image <- getTestImage idx
     label <- getTestLabel idx
     sdr_setDenseWithUChar input image
-    SP.compute sp input False columns
+    columns <- SP.compute_ sp input False
     iterNum <- SP.getIterationNum sp
     sparse <- getSparse columns
     result <- CLSR.compute clsr iterNum sparse [] [] True False True
@@ -76,19 +74,18 @@ hotsp = do
   -- anLikelihood <- anomaly_new 5 AnomalyMode_Likelihood 0
 
   ncells <- fromIntegral <$> TP.nCells tp
-  let rOutI = replicate ncells 0.0
 
   let train prevPred val = do
-        input <- SE.encode enc val
-        rIn <- SP.compute_ spGlobal input True $ replicate (fromIntegral cols) 0
-        rOut <- TP.compute tp (map fromIntegral rIn) rOutI True True
-        res <- AN.compute an rIn prevPred
+        input <- snd <$> SE.encode enc val
+        rIn <- SP.compute spGlobal input True
+        rOut <- TP.compute tp (map fromIntegral rIn) prevPred True True
+        res <- AN.compute an rIn $ map floor prevPred
         print res
-        threadDelay 1000000
-        return $ map floor rOut
+        threadDelay 10000
+        return rOut
 
-  values <- replicateM 100 $ getStdRandom (randomR (-100.0,100.0)) :: IO [Float]
-  r <- foldM train (replicate (fromIntegral ncells) 0) values
+  values <- replicateM 5000 $ getStdRandom (randomR (-100.0,100.0)) :: IO [Float]
+  r <- foldM train (replicate (fromIntegral ncells) 0.0) values
   print r
   putStrLn "SaveFile"
   TP.saveToFile tp "cells4.txt"
