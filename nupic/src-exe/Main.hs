@@ -1,35 +1,30 @@
 module Main (main) where
 
-import           Control.Monad          (foldM, replicateM, void)
-import           Foreign.C              (CFloat, CUInt)
-import           Foreign.Hoppy.Runtime  (fromContents)
-import           Foreign.Marshal.Array  (newArray, peekArray)
+import           Control.Concurrent             (threadDelay)
+import           Control.Monad                  (foldM, replicateM, void)
 import           Foreign.Nupic.Internal
-import           Foreign.Nupic.Std      ()
-import           Foreign.Ptr            (Ptr)
+import           Foreign.Nupic.Std              ()
 import           Prelude
-import           System.Random          (getStdRandom, newStdGen, randomR)
-import           System.Random.Shuffle  (shuffle')
+import           System.Random                  (getStdRandom, newStdGen,
+                                                 randomR)
+import           System.Random.Shuffle          (shuffle')
+
+import qualified Nupic.Algorithms.Anomaly       as AN
+import qualified Nupic.Algorithms.Cells4        as TP
+import qualified Nupic.Algorithms.SdrClassifier as CLSR
+import qualified Nupic.Algorithms.SpatialPooler as SP
+import qualified Nupic.Encoders.ScalarEncoder   as SE
+import           Nupic.Types                    (getClass, getDimensions,
+                                                 getSparse, newSdr)
 
 mnist :: IO ()
 mnist = do
-  input <- sdr_new
-  columns <- sdr_new
-  v <- fromContents [28, 28]  :: IO UIntVector
-  sdr_initialize input v
-
-  v1 <- fromContents [0] :: IO UIntVector
-  clsr <- sdrClassifier_new v1 0.001 3 1
-
-  dims <- sdr_dimensions input
-
-  sp <- spatialPooler_new dims v 5 0.5 False 0.20 (-1) 6 0.005 0.01 0.4 0.001 1402 2.5 93 1 False
-
-  numColums <- spatialPooler_getNumColumns sp
-
-  vv <- fromContents [numColums] :: IO UIntVector
-
-  sdr_initialize columns vv
+  input <- newSdr [28, 28]
+  clsr <- CLSR.new [0] 0.001 3 1
+  dims <- getDimensions input
+  sp <- SP.new $ SP.Options dims [28, 28] 5 0.5 False 0.20 (-1) 6 0.005 0.01 0.4 0.001 1402 2.5 93 1 False
+  numColums <- SP.getNumColumns sp
+  columns <- newSdr [numColums]
 
   setup
 
@@ -40,34 +35,28 @@ mnist = do
     image <- getTrainImage idx
     label <- getTrainLabel idx
     sdr_setDenseWithUChar input image
-    spatialPooler_compute sp input True columns
-    result <- classifierResult_new
-    iterNum <- spatialPooler_getIterationNum sp
-    sparse <- sdr_getSparse columns
-    labelv <- fromContents [label] :: IO UIntVector
-    labelv1 <- fromContents [fromIntegral label] :: IO Real64Vector
-    sdrClassifier_compute clsr iterNum sparse labelv labelv1 True True False result
+    SP.compute sp input True columns
+    iterNum <- SP.getIterationNum sp
+    sparse <- getSparse columns
+    void $ CLSR.compute clsr iterNum sparse [label] [fromIntegral label] True True False
 
   putStrLn "End training"
 
-  spatialPooler_saveToFile sp "spatial_pooler.txt"
-  sdrClassifier_saveToFile clsr "sdr_calssifier.txt"
-  -- spatialPooler_load sp "spatial_pooler.txt"
-  -- sdrClassifier_load clsr "sdr_calssifier.txt"
+  SP.saveToFile sp "spatial_pooler.txt"
+  CLSR.saveToFile clsr "sdr_calssifier.txt"
+  -- SP.loadFromFile sp "spatial_pooler.txt"
+  -- CLSR.loadFromFile clsr "sdr_calssifier.txt"
 
   putStrLn $ "Start testing"
   r <- flip mapM [0..9999] $ \idx -> do
     image <- getTestImage idx
     label <- getTestLabel idx
     sdr_setDenseWithUChar input image
-    spatialPooler_compute sp input False columns
-    result <- classifierResult_new
-    iterNum <- spatialPooler_getIterationNum sp
-    sparse <- sdr_getSparse columns
-    l <- uIntVector_new
-    lv <- real64Vector_new
-    sdrClassifier_compute clsr iterNum sparse l lv True False True result
-    res <- classifierResult_getClass result 0
+    SP.compute sp input False columns
+    iterNum <- SP.getIterationNum sp
+    sparse <- getSparse columns
+    result <- CLSR.compute clsr iterNum sparse [] [] True False True
+    res <- getClass result 0
     return $ res == label
   putStrLn "End testing"
 
@@ -78,48 +67,31 @@ hotsp = do
   let dim_input = 10000
       cols = 2048
       cells = 10
-  enc <- scalarEncoder_new 133 (-100) 100.0 dim_input 0.0 0.0 False
-  vdim <- fromContents [fromIntegral dim_input] :: IO UIntVector
-  vcols <- fromContents [cols] :: IO UIntVector
-  spGlobal <- spatialPooler_new2 vdim vcols
-  spatialPooler_setGlobalInhibition spGlobal True
+  enc <- SE.new 133 (-100) 100.0 dim_input 0.0 0.0 False
 
-  tp <- cells4_new cols cells 12 8 15 5 0.5 0.8 1.0 0.1 0.1 0.0 False 42 True False
-  an <- anomaly_new 5 AnomalyMode_Likelihood 0
+  spGlobal <- SP.new $ (SP.options [fromIntegral dim_input] [cols]) {SP.globalInhibition = True}
+
+  tp <- TP.new $ TP.Options cols cells 12 8 15 5 0.5 0.8 1.0 0.1 0.1 0.0 False 42 True False
+  an <- AN.new 5 AN.Likelihood 0
   -- anLikelihood <- anomaly_new 5 AnomalyMode_Likelihood 0
 
-  ncells <- cells4_nCells tp
+  ncells <- fromIntegral <$> TP.nCells tp
+  let rOutI = replicate ncells 0.0
 
   let train prevPred val = do
-        ptrInput <- newArray $ replicate (fromIntegral dim_input) 0 :: IO (Ptr CUInt)
-        void $ scalarEncoder_encodeIntoArray enc val ptrInput
-
-        ptrOutSP <- newArray $ replicate (fromIntegral cols) 0 :: IO (Ptr CUInt)
-        spatialPooler_computeWithPtr spGlobal ptrInput True ptrOutSP
-
-        rInValues <- map fromIntegral <$> peekArray (fromIntegral cols) ptrOutSP
-
-        ptrRIn <- newArray rInValues :: IO (Ptr CFloat)
-        ptrROut <- newArray $ replicate (fromIntegral ncells) 0.0 :: IO (Ptr CFloat)
-
-        cells4_compute tp ptrRIn ptrROut True True
-        rOutValues <- map floor <$> peekArray (fromIntegral ncells) ptrROut
-
-        prevPred_ <- fromContents prevPred :: IO UIntVector
-
-        outSPValues <- peekArray (fromIntegral cols) ptrOutSP
-
-        outSP <- fromContents outSPValues :: IO UIntVector
-
-        res <- anomaly_compute an outSP prevPred_ (-1)
+        input <- SE.encode enc val
+        rIn <- SP.compute_ spGlobal input True $ replicate (fromIntegral cols) 0
+        rOut <- TP.compute tp (map fromIntegral rIn) rOutI True True
+        res <- AN.compute an rIn prevPred
         print res
-        return rOutValues
+        threadDelay 1000000
+        return $ map floor rOut
 
-  values <- replicateM 5000 $ getStdRandom (randomR (-100.0,100.0)) :: IO [Float]
+  values <- replicateM 100 $ getStdRandom (randomR (-100.0,100.0)) :: IO [Float]
   r <- foldM train (replicate (fromIntegral ncells) 0) values
   print r
   putStrLn "SaveFile"
-  cells4_saveToFile tp "cells4.txt"
+  TP.saveToFile tp "cells4.txt"
 
 main :: IO ()
 main = hotsp

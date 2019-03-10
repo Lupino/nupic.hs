@@ -23,8 +23,7 @@ c_sdr :: Class
 c_sdr =
   addReqIncludes [includeLocal "nupic/types/Sdr.hpp"] $
   makeClass (ident1 "nupic" "SDR") (Just $ toExtName "Sdr") [] $
-  [ mkCtor "new" []
-  , mkMethod "initialize" [constUintVectorT] voidT
+  [ mkCtor "new" [constUintVectorT]
   , mkMethod "getDense" [] charVectorT'
   , mkMethod "setDense" [charVectorT] voidT
   , mkMethod' "setDense" "setDenseWithUChar" [ucharVectorT] voidT

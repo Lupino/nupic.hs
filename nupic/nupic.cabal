@@ -18,6 +18,17 @@ library
   exposed-modules:
       Foreign.Nupic.Std
     , Foreign.Nupic.Internal
+    , Nupic
+    , Nupic.Algorithms
+    , Nupic.Algorithms.SdrClassifier
+    , Nupic.Algorithms.SpatialPooler
+    , Nupic.Algorithms.Cells4
+    , Nupic.Algorithms.Anomaly
+    , Nupic.Encoders
+    , Nupic.Encoders.ScalarEncoder
+    , Nupic.Types
+    , Nupic.Types.Sdr
+    , Nupic.Types.ClassifierResult
   other-extensions:
       FlexibleInstances
     , MultiParamTypeClasses
