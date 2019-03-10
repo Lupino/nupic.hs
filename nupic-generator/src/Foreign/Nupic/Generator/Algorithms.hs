@@ -146,6 +146,25 @@ c_anomalyLikelihood =
     , mkMethod "anomalyProbability" [floatT, intT] floatT
     ]
 
+c_temporalMemory :: Class
+c_temporalMemory =
+  addReqIncludes [includeLocal "nupic/algorithms/TemporalMemory.hpp"] $
+  makeClass (ident3 "nupic" "algorithms" "temporal_memory" "TemporalMemory") (Just $ toExtName "TemporalMemory") [] $
+    [ mkCtor "new"
+      [ uintVectorT, uintT, uintT, floatT, floatT, uintT, uintT, floatT, floatT
+      , floatT, intT, uintT, uintT, boolT, uintT
+      ]
+    , mkMethod "version" [] uintT
+    , mkMethod "seed_" [longT] voidT
+    , mkMethod "reset" [] voidT
+    , mkMethod "compute" [refT sdrT, boolT, refT sdrT, refT sdrT] voidT
+    , mkMethod "getActiveCells" [] uintVectorT'
+    , mkMethod "getPredictiveCells" [] uintVectorT'
+    , mkMethod "getWinnerCells" [] uintVectorT'
+    , mkMethod "saveToFile" [objT c_string] voidT
+    , mkMethod "loadFromFile" [objT c_string] voidT
+    ]
+
 algorithmExports :: [Export]
 algorithmExports =
   [ ExportClass c_sdrClassifier
@@ -154,4 +173,5 @@ algorithmExports =
   , ExportEnum c_anomalyMode
   , ExportClass c_anomaly
   , ExportClass c_anomalyLikelihood
+  , ExportClass c_temporalMemory
   ]

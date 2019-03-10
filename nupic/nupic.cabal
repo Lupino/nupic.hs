@@ -24,6 +24,7 @@ library
     , Nupic.Algorithms.SpatialPooler
     , Nupic.Algorithms.Cells4
     , Nupic.Algorithms.Anomaly
+    , Nupic.Algorithms.TemporalMemory
     , Nupic.Encoders
     , Nupic.Encoders.ScalarEncoder
     , Nupic.Types
