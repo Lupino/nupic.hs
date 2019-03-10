@@ -75,12 +75,13 @@ new Options {..} =
     initFromCpp
     checkSynapseConsistency
 
-compute :: Cells4 -> [CFloat] -> [CFloat] -> Bool -> Bool -> IO [CFloat]
-compute cells4 input output doInference doLearning = do
+compute :: Cells4 -> [CFloat] -> Bool -> Bool -> IO [CFloat]
+compute cells4 input doInference doLearning = do
   inputPtr <- newArray input
-  outputPtr <- newArray output
+  ncells <- fromIntegral <$> nCells cells4
+  outputPtr <- newArray $ replicate ncells 0.0
   cells4_compute cells4 inputPtr outputPtr doInference doLearning
-  peekArray (length output) outputPtr
+  peekArray ncells outputPtr
 
 nCells :: Cells4 -> IO CUInt
 nCells = cells4_nCells
