@@ -1,0 +1,7 @@
+nupic/src/Foreign
+nupic-cpp/cpp/gen_*
+nupic-cpp/cpp/*.o
+nupic-cpp/cpp/*.so
+nupic-cpp/cpp/*.a
+.stack-work
+dist
