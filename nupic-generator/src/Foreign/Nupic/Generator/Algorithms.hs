@@ -163,6 +163,8 @@ c_temporalMemory =
     , mkMethod "getWinnerCells" [] uintVectorT'
     , mkMethod "saveToFile" [objT c_string] voidT
     , mkMethod "loadFromFile" [objT c_string] voidT
+    , mkMethod "numberOfCells" [] uintT
+    , mkMethod "activateDendrites" [boolT, refT uintVectorT, refT uintVectorT] voidT
     ]
 
 algorithmExports :: [Export]
