@@ -1,0 +1,3 @@
+[submodule "nupic.cpp"]
+	path = nupic.cpp
+	url = https://github.com/htm-community/nupic.cpp.git
