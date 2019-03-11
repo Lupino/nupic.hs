@@ -30,3 +30,8 @@ unsigned int getTestLabel(unsigned int idx) {
   const unsigned int label  = g_dataset.test_labels.at(idx);
   return label;
 }
+
+float * backTM_predict(nupic::algorithms::backtracking_tm::BacktrackingTMCpp &backTM, unsigned int nStep) {
+  std::shared_ptr<float> pred = backTM.predict(nStep);
+  return pred.get();
+}

@@ -167,6 +167,58 @@ c_temporalMemory =
     , mkMethod "activateDendrites" [boolT, refT uintVectorT, refT uintVectorT] voidT
     ]
 
+c_backtrackingTMCpp :: Class
+c_backtrackingTMCpp =
+  addReqIncludes [includeLocal "nupic/algorithms/BacktrackingTMCpp.hpp"] $
+  makeClass (ident3 "nupic" "algorithms" "backtracking_tm" "BacktrackingTMCpp") (Just $ toExtName "BacktrackingTMCpp") [] $
+    [ mkCtor "new"
+      [ uintT
+      -- BacktrackingTMCpp(UInt32 numberOfCols,
+      , uintT
+      --                   UInt32 cellsPerColumn, // first two fields are required
+      , floatT, floatT
+      --                   Real32 initialPerm = 0.11f, Real32 connectedPerm = 0.50f,
+      , uintT, uintT
+      --                   UInt32 minThreshold = 8, UInt32 newSynapseCount = 15,
+      , floatT, floatT
+      --                   Real32 permanenceInc = 0.10f, Real32 permanenceDec = 0.10f,
+      , floatT, floatT
+      --                   Real32 permanenceMax = 1.0f, Real32 globalDecay = 0.10f,
+      , uintT, boolT
+      --                   UInt32 activationThreshold = 12, bool doPooling = false,
+      , uintT, uintT
+      --                   UInt32 segUpdateValidDuration = 5, UInt32 burnIn = 2,
+      , boolT, intT
+      --                   bool collectStats = false, Int32 seed = 42,
+      , intT, boolT
+      --                   Int32 verbosity = 0, bool checkSynapseConsistency = false,
+      , uintT, uintT
+      --                   UInt32 pamLength = 1, UInt32 maxInfBacktrack = 10,
+      , uintT, uintT
+      --                   UInt32 maxLrnBacktrack = 5, UInt32 maxAge = 100000,
+      , uintT, intT
+      --                   UInt32 maxSeqLength = 32, Int32 maxSegmentsPerCell = -1,
+      , intT
+      --                   Int32 maxSynapsesPerSegment = -1,
+      , objT c_string
+      --                   const std::string outputType = "normal");
+      ]
+    , mkMethod "version" [] uintT
+    , mkMethod "compute" [ptrT floatT, boolT, boolT] $ ptrT floatT
+    , mkMethod "finishLearning" [] voidT
+    , mkMethod "reset" [] voidT
+    , mkMethod "saveToFile" [objT c_string] voidT
+    , mkMethod "loadFromFile" [objT c_string] voidT
+    ]
+
+backTMT :: Type
+backTMT = objT c_backtrackingTMCpp
+
+c_backTM_predict :: Function
+c_backTM_predict =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "backTM_predict") Nothing Nonpure [refT backTMT, uintT] $ ptrT floatT
+
 algorithmExports :: [Export]
 algorithmExports =
   [ ExportClass c_sdrClassifier
@@ -176,4 +228,6 @@ algorithmExports =
   , ExportClass c_anomaly
   , ExportClass c_anomalyLikelihood
   , ExportClass c_temporalMemory
+  , ExportClass c_backtrackingTMCpp
+  , ExportFn c_backTM_predict
   ]

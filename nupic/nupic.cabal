@@ -25,6 +25,7 @@ library
     , Nupic.Algorithms.Cells4
     , Nupic.Algorithms.Anomaly
     , Nupic.Algorithms.TemporalMemory
+    , Nupic.Algorithms.BacktrackingTM
     , Nupic.Encoders
     , Nupic.Encoders.ScalarEncoder
     , Nupic.Types
