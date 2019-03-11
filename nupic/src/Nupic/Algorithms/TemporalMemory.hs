@@ -7,9 +7,9 @@ module Nupic.Algorithms.TemporalMemory
   , version
   , seed_
   , reset
-  , compute_
-  , compute_'
+  , computeRaw
   , compute
+  , compute'
   , getWinnerCells
   , getPredictiveCells
   , getActiveCells
@@ -21,8 +21,8 @@ module Nupic.Algorithms.TemporalMemory
   ) where
 
 import           Foreign.C              (CLong, CUInt)
-import           Foreign.Hoppy.Runtime  (fromContents, toContents)
-import           Foreign.Nupic.Internal (TemporalMemory, UIntVector,
+import           Foreign.Hoppy.Runtime  (fromContents)
+import           Foreign.Nupic.Internal (UIntVector,
                                          temporalMemory_activateDendrites,
                                          temporalMemory_compute,
                                          temporalMemory_getActiveCells,
@@ -35,7 +35,9 @@ import           Foreign.Nupic.Internal (TemporalMemory, UIntVector,
                                          temporalMemory_saveToFile,
                                          temporalMemory_seed_,
                                          temporalMemory_version)
-import           Nupic.Types.Sdr        (Sdr, getDense, newSdr, setDense)
+import qualified Foreign.Nupic.Internal as I (TemporalMemory)
+import           Nupic.Types.Internal   (getUIntArray)
+import           Nupic.Types.Sdr        (Sdr, newSdr, setSparse)
 
 data Options = Options
   { columnDimensions          :: [CUInt]
@@ -74,10 +76,12 @@ options dims = Options
   , extra                     = 0
   }
 
+data TemporalMemory = TM Options I.TemporalMemory
+
 new :: Options -> IO TemporalMemory
-new Options {..} = do
+new opt@Options {..} = do
   dims <- fromContents columnDimensions :: IO UIntVector
-  temporalMemory_new
+  tm <- temporalMemory_new
     dims
     cellsPerColumn
     activationThreshold
@@ -94,44 +98,47 @@ new Options {..} = do
     checkInputs
     extra
 
+  return $ TM opt tm
+
 version :: TemporalMemory -> IO CUInt
-version = temporalMemory_version
+version (TM _ tm) = temporalMemory_version tm
 
 seed_ :: TemporalMemory -> CLong -> IO ()
-seed_ = temporalMemory_seed_
+seed_ (TM _ tm) = temporalMemory_seed_ tm
 
-compute_ :: TemporalMemory -> Sdr -> Bool -> Sdr -> Sdr -> IO ()
-compute_ = temporalMemory_compute
+computeRaw :: TemporalMemory -> Sdr -> Bool -> Sdr -> Sdr -> IO ()
+computeRaw (TM _ tm) = temporalMemory_compute tm
 
-compute_' :: TemporalMemory -> Sdr -> Bool -> IO ()
-compute_' tm sdr learn = do
+compute :: TemporalMemory -> Sdr -> Bool -> IO ()
+compute tm sdr learn = do
   extraActive <- newSdr [0]
   extraWinners <- newSdr [0]
-  compute_ tm sdr learn extraActive extraWinners
+  computeRaw tm sdr learn extraActive extraWinners
 
-compute :: TemporalMemory -> [CUInt] -> Bool -> IO ()
-compute tm arr learn = do
-  sdr <- newSdr [fromIntegral $ length arr]
-  setDense sdr $ map fromIntegral arr
-  compute_' tm sdr learn
+compute' :: TemporalMemory -> [CUInt] -> Bool -> IO ()
+compute' tm@(TM opt _) arr learn = do
+  sdr <- newSdr $ columnDimensions opt
+  setSparse sdr arr
+  compute tm sdr learn
 
 getActiveCells :: TemporalMemory -> IO [CUInt]
-getActiveCells tm = toContents =<< temporalMemory_getActiveCells tm
+getActiveCells (TM _ tm) = getUIntArray =<< temporalMemory_getActiveCells tm
 
 getPredictiveCells :: TemporalMemory -> IO [CUInt]
-getPredictiveCells tm = toContents =<< temporalMemory_getPredictiveCells tm
+getPredictiveCells (TM _ tm) =
+  getUIntArray =<< temporalMemory_getPredictiveCells tm
 
 getWinnerCells :: TemporalMemory -> IO [CUInt]
-getWinnerCells tm = toContents =<< temporalMemory_getWinnerCells tm
+getWinnerCells (TM _ tm) = getUIntArray =<< temporalMemory_getWinnerCells tm
 
 reset :: TemporalMemory -> IO ()
-reset = temporalMemory_reset
+reset (TM _ tm) = temporalMemory_reset tm
 
 numberOfCells :: TemporalMemory -> IO CUInt
-numberOfCells = temporalMemory_numberOfCells
+numberOfCells (TM _ tm) = temporalMemory_numberOfCells tm
 
 activateDendrites :: TemporalMemory -> Bool -> [CUInt] -> [CUInt] -> IO ()
-activateDendrites tm learn extraActive extraWinners = do
+activateDendrites (TM _ tm) learn extraActive extraWinners = do
   v0 <- fromContents extraActive :: IO UIntVector
   v1 <- fromContents extraWinners :: IO UIntVector
   temporalMemory_activateDendrites tm learn v0 v1
@@ -140,7 +147,7 @@ activateDendrites' :: TemporalMemory -> IO ()
 activateDendrites' tm = activateDendrites tm True [maxBound] [maxBound]
 
 saveToFile :: TemporalMemory -> FilePath -> IO ()
-saveToFile = temporalMemory_saveToFile
+saveToFile (TM _ tm) = temporalMemory_saveToFile tm
 
 loadFromFile :: TemporalMemory -> FilePath -> IO ()
-loadFromFile = temporalMemory_loadFromFile
+loadFromFile (TM _ tm) = temporalMemory_loadFromFile tm
