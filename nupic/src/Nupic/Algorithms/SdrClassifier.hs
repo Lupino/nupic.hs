@@ -7,9 +7,8 @@ module Nupic.Algorithms.SdrClassifier
   ) where
 
 import           Foreign.C                    (CUInt)
-import           Foreign.Hoppy.Runtime        (fromContents, toContents)
-import           Foreign.Nupic.Internal       (ByteVector, Real64Vector,
-                                               SdrClassifier, UByteVector,
+import           Foreign.Hoppy.Runtime        (fromContents)
+import           Foreign.Nupic.Internal       (Real64Vector, SdrClassifier,
                                                UIntVector)
 import           Foreign.Nupic.Internal       as Exports (sdrClassifier_compute, sdrClassifier_loadFromFile,
                                                           sdrClassifier_new,

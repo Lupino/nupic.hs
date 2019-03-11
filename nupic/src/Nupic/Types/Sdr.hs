@@ -11,7 +11,7 @@ module Nupic.Types.Sdr
   ) where
 
 import           Foreign.C              (CChar, CUChar, CUInt)
-import           Foreign.Hoppy.Runtime  (fromContents, toContents)
+import           Foreign.Hoppy.Runtime  (fromContents)
 import           Foreign.Nupic.Internal (ByteVector, Sdr, UByteVector,
                                          UIntVector)
 import           Foreign.Nupic.Internal as Exports (sdr_dimensions,
@@ -19,6 +19,7 @@ import           Foreign.Nupic.Internal as Exports (sdr_dimensions,
                                                     sdr_new, sdr_setDense,
                                                     sdr_setDenseWithUChar,
                                                     sdr_setSparse)
+import           Nupic.Types.Internal   (getCharArray, getUIntArray)
 
 newSdr :: [CUInt] -> IO Sdr
 newSdr dimensions = do
@@ -26,14 +27,10 @@ newSdr dimensions = do
   sdr_new v
 
 getDimensions :: Sdr -> IO [CUInt]
-getDimensions sdr = do
-  dims <- sdr_dimensions sdr
-  toContents dims
+getDimensions sdr = getUIntArray =<< sdr_dimensions sdr
 
 getDense :: Sdr -> IO [CChar]
-getDense sdr = do
-  dense <- sdr_getDense sdr
-  toContents dense
+getDense sdr = getCharArray =<< sdr_getDense sdr
 
 setDense :: Sdr -> [CChar] -> IO ()
 setDense sdr dense = do
@@ -46,12 +43,9 @@ setDense' sdr dense = do
   sdr_setDenseWithUChar sdr d
 
 getSparse :: Sdr -> IO [CUInt]
-getSparse sdr = do
-  sparse <- sdr_getSparse sdr
-  toContents sparse
+getSparse sdr = getUIntArray =<< sdr_getSparse sdr
 
 setSparse :: Sdr -> [CUInt] -> IO ()
 setSparse sdr sparse = do
   s <- fromContents sparse :: IO UIntVector
   sdr_setSparse sdr s
-
