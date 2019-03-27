@@ -35,3 +35,24 @@ float * backTM_predict(nupic::algorithms::backtracking_tm::BacktrackingTM &backT
   std::shared_ptr<float> pred = backTM.predict(nStep);
   return pred.get();
 }
+
+nupic::encoders::ScalarEncoder * scalarEncoder_new(
+    nupic::Real64 minimum, nupic::Real64 maximum,
+    bool clipInput, bool periodic,
+    nupic::UInt activeBits,
+    nupic::Real sparsity,
+    nupic::UInt size,
+    Real64 radius, Real64 resolution) {
+
+  nupic::encoders::ScalarEncoderParameters params;
+  params.minimum = minimum;
+  params.maximum = maximum;
+  params.clipInput = clipInput;
+  params.periodic = periodic;
+  params.activeBits = activeBits;
+  params.sparsity = sparsity;
+  params.size = size;
+  params.radius = radius;
+  params.resolution = resolution;
+  return new nupic::encoders::ScalarEncoder( params );
+}

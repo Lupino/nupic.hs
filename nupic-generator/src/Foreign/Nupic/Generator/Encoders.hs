@@ -4,24 +4,31 @@ module Foreign.Nupic.Generator.Encoders
 
 import           Foreign.Hoppy.Generator.Spec
 import           Foreign.Hoppy.Generator.Types
+import           Foreign.Nupic.Generator.Types  (sdrT)
 import           Foreign.Nupic.Generator.Vector
 
 
-c_scalarEncoderBase :: String -> [ClassEntity] -> Class
-c_scalarEncoderBase name other =
+c_scalarEncoder :: Class
+c_scalarEncoder =
   addReqIncludes [includeLocal "nupic/encoders/ScalarEncoder.hpp"] $
-  makeClass (ident1 "nupic" name) (Just $ toExtName name) [] $
-  [ mkMethod "encodeIntoArray" [floatT, ptrT uintT] intT
-  , mkMethod "getOutputWidth" [] uintT
-  , mkMethod "encode" [uintT] uintVectorT'
-  ] ++ other
+  makeClass (ident2 "nupic" "encoders" "ScalarEncoder") (Just $ toExtName "ScalarEncoder") [] $
+  [ mkMethod "encode" [doubleT, refT sdrT] voidT
+  ]
+
+c_scalarEncoder_new :: Function
+c_scalarEncoder_new =
+  addReqIncludes [includeLocal "utils.hpp"] $
+  makeFn (ident "scalarEncoder_new") Nothing Nonpure
+    [ doubleT, doubleT
+    , boolT, boolT
+    , uintT
+    , floatT
+    , uintT
+    , doubleT, doubleT
+    ] $ ptrT $ objT c_scalarEncoder
 
 encoderExports :: [Export]
 encoderExports =
-  [ ExportClass $ c_scalarEncoderBase "ScalarEncoder"
-    [ mkCtor "new" [intT, doubleT, doubleT, intT, doubleT, doubleT, boolT]
-    ]
-  , ExportClass $ c_scalarEncoderBase "PeriodicScalarEncoder"
-    [ mkCtor "new" [intT, doubleT, doubleT, intT, doubleT, doubleT]
-    ]
+  [ ExportClass c_scalarEncoder
+  , ExportFn c_scalarEncoder_new
   ]
