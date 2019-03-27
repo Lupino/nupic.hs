@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <nupic/types/Sdr.hpp>
-#include <nupic/algorithms/BacktrackingTMCpp.hpp>
+#include <nupic/algorithms/BacktrackingTM.hpp>
 
 void setup();
 
@@ -17,6 +17,6 @@ unsigned int getTestLabel(unsigned int idx);
 
 std::vector<unsigned int> sdr_dimensions(nupic::SDR self);
 
-float * backTM_predict(nupic::algorithms::backtracking_tm::BacktrackingTMCpp &backTM, unsigned int nStep);
+float * backTM_predict(nupic::algorithms::backtracking_tm::BacktrackingTM &backTM, unsigned int nStep);
 
 #endif // end ifndef UTILS_HPP

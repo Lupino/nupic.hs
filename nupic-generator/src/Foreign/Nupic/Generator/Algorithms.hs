@@ -167,13 +167,13 @@ c_temporalMemory =
     , mkMethod "activateDendrites" [boolT, refT uintVectorT, refT uintVectorT] voidT
     ]
 
-c_backtrackingTMCpp :: Class
-c_backtrackingTMCpp =
-  addReqIncludes [includeLocal "nupic/algorithms/BacktrackingTMCpp.hpp"] $
-  makeClass (ident3 "nupic" "algorithms" "backtracking_tm" "BacktrackingTMCpp") (Just $ toExtName "BacktrackingTMCpp") [] $
+c_backtrackingTM :: Class
+c_backtrackingTM =
+  addReqIncludes [includeLocal "nupic/algorithms/BacktrackingTM.hpp"] $
+  makeClass (ident3 "nupic" "algorithms" "backtracking_tm" "BacktrackingTM") (Just $ toExtName "BacktrackingTM") [] $
     [ mkCtor "new"
       [ uintT
-      -- BacktrackingTMCpp(UInt32 numberOfCols,
+      -- BacktrackingTM(UInt32 numberOfCols,
       , uintT
       --                   UInt32 cellsPerColumn, // first two fields are required
       , floatT, floatT
@@ -212,7 +212,7 @@ c_backtrackingTMCpp =
     ]
 
 backTMT :: Type
-backTMT = objT c_backtrackingTMCpp
+backTMT = objT c_backtrackingTM
 
 c_backTM_predict :: Function
 c_backTM_predict =
@@ -228,6 +228,6 @@ algorithmExports =
   , ExportClass c_anomaly
   , ExportClass c_anomalyLikelihood
   , ExportClass c_temporalMemory
-  , ExportClass c_backtrackingTMCpp
+  , ExportClass c_backtrackingTM
   , ExportFn c_backTM_predict
   ]

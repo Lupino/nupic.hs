@@ -31,7 +31,7 @@ unsigned int getTestLabel(unsigned int idx) {
   return label;
 }
 
-float * backTM_predict(nupic::algorithms::backtracking_tm::BacktrackingTMCpp &backTM, unsigned int nStep) {
+float * backTM_predict(nupic::algorithms::backtracking_tm::BacktrackingTM &backTM, unsigned int nStep) {
   std::shared_ptr<float> pred = backTM.predict(nStep);
   return pred.get();
 }

@@ -17,14 +17,14 @@ module Nupic.Algorithms.BacktrackingTM
 
 import           Foreign.C              (CFloat, CUInt)
 import           Foreign.Marshal.Array  (newArray, peekArray)
-import           Foreign.Nupic.Internal (BacktrackingTMCpp, backTM_predict,
-                                         backtrackingTMCpp_compute,
-                                         backtrackingTMCpp_finishLearning,
-                                         backtrackingTMCpp_loadFromFile,
-                                         backtrackingTMCpp_new,
-                                         backtrackingTMCpp_reset,
-                                         backtrackingTMCpp_saveToFile,
-                                         backtrackingTMCpp_version)
+import           Foreign.Nupic.Internal (backTM_predict, backtrackingTM_compute,
+                                         backtrackingTM_finishLearning,
+                                         backtrackingTM_loadFromFile,
+                                         backtrackingTM_new,
+                                         backtrackingTM_reset,
+                                         backtrackingTM_saveToFile,
+                                         backtrackingTM_version)
+import qualified Foreign.Nupic.Internal as I (BacktrackingTM)
 
 data Options = Options
   { numberOfCols            :: CUInt
@@ -85,11 +85,11 @@ options cols cells = Options
   , outputType              = "normal"
   }
 
-data BacktrackingTM = BacktrackingTM Options BacktrackingTMCpp
+data BacktrackingTM = BacktrackingTM Options I.BacktrackingTM
 
 new :: Options -> IO BacktrackingTM
 new opt@Options {..} = do
-  tm <- backtrackingTMCpp_new
+  tm <- backtrackingTM_new
     numberOfCols
     cellsPerColumn
     initialPerm
@@ -120,12 +120,12 @@ new opt@Options {..} = do
   return $ BacktrackingTM opt tm
 
 version :: BacktrackingTM -> IO CUInt
-version (BacktrackingTM _ tm)= backtrackingTMCpp_version tm
+version (BacktrackingTM _ tm)= backtrackingTM_version tm
 
 compute :: BacktrackingTM -> [CFloat] -> Bool -> Bool -> IO [CFloat]
 compute (BacktrackingTM (Options {..}) tm) bottomUpInput enableLearn enableInference = do
   input <- newArray bottomUpInput
-  r <- backtrackingTMCpp_compute tm input enableLearn enableInference
+  r <- backtrackingTM_compute tm input enableLearn enableInference
   peekArray (fromIntegral $ numberOfCols * cellsPerColumn) r
 
 infer :: BacktrackingTM -> [CFloat] -> IO [CFloat]
@@ -135,10 +135,10 @@ learn :: BacktrackingTM -> [CFloat] -> Bool -> IO [CFloat]
 learn tm input = compute tm input True
 
 finishLearning :: BacktrackingTM -> IO ()
-finishLearning (BacktrackingTM _ tm) = backtrackingTMCpp_finishLearning tm
+finishLearning (BacktrackingTM _ tm) = backtrackingTM_finishLearning tm
 
 reset :: BacktrackingTM -> IO ()
-reset (BacktrackingTM _ tm) = backtrackingTMCpp_reset tm
+reset (BacktrackingTM _ tm) = backtrackingTM_reset tm
 
 predict :: BacktrackingTM -> CUInt -> IO [[CFloat]]
 predict (BacktrackingTM Options{..} tm) nStep = do
@@ -150,7 +150,7 @@ predict (BacktrackingTM Options{..} tm) nStep = do
         numcols = fromIntegral numberOfCols
 
 saveToFile :: BacktrackingTM -> FilePath -> IO ()
-saveToFile (BacktrackingTM _ tm)= backtrackingTMCpp_saveToFile tm
+saveToFile (BacktrackingTM _ tm)= backtrackingTM_saveToFile tm
 
 loadFromFile :: BacktrackingTM -> FilePath -> IO ()
-loadFromFile (BacktrackingTM _ tm)= backtrackingTMCpp_loadFromFile tm
+loadFromFile (BacktrackingTM _ tm)= backtrackingTM_loadFromFile tm
