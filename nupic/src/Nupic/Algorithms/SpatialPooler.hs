@@ -16,7 +16,6 @@ module Nupic.Algorithms.SpatialPooler
 import           Foreign.C              (CUInt)
 import           Foreign.Hoppy.Runtime  (fromContents)
 import           Foreign.Nupic.Internal (UIntVector, spatialPooler_compute,
-                                         spatialPooler_computeWithPtr,
                                          spatialPooler_getIterationNum,
                                          spatialPooler_getNumColumns,
                                          spatialPooler_loadFromFile,
